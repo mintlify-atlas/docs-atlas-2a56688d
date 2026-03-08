@@ -1,0 +1,297 @@
+---
+title: 'Table'
+description: 'Main table class for creating and rendering tables'
+---
+
+## Overview
+
+The `Table` class is the primary interface for creating tables in Tabular. It manages rows, borders, and rendering configuration. Tables can be constructed with rows and a border, or built incrementally using the fluent API.
+
+## Class Definition
+
+```cpp
+namespace tabular {
+  class Table;
+}
+```
+
+## Constructors
+
+### Default Constructor
+
+```cpp
+Table()
+```
+
+Creates an empty table with default settings.
+
+**Example:**
+```cpp
+#include <tabular/table.h>
+
+tabular::Table table;
+```
+
+### Parameterized Constructor
+
+```cpp
+explicit Table(std::vector<Row> rows, Border border = {})
+```
+
+Creates a table with the specified rows and border.
+
+<ParamField path="rows" type="std::vector<Row>">
+  Vector of Row objects to initialize the table
+</ParamField>
+
+<ParamField path="border" type="Border" default="{}">
+  Border style for the table (default is basic ASCII border)
+</ParamField>
+
+**Example:**
+```cpp
+using namespace tabular;
+
+std::vector<Row> rows = {
+  Row({"Name", "Age", "City"}),
+  Row({"Alice", "30", "NYC"})
+};
+
+Table table(rows, Border::modern());
+```
+
+## Methods
+
+### addRow()
+
+Adds a row to the table and returns a reference for method chaining.
+
+```cpp
+Table& addRow(Row row)
+Table& addRow(std::vector<std::string> row)
+```
+
+<ParamField path="row" type="Row | std::vector<std::string>">
+  Row object or vector of strings to add to the table
+</ParamField>
+
+**Returns:** Reference to the table for chaining
+
+**Example:**
+```cpp
+Table table;
+table.addRow({"Name", "Age", "City"})
+     .addRow({"Bob", "25", "LA"})
+     .addRow({"Carol", "28", "SF"});
+```
+
+### rows()
+
+Gets or sets all rows in the table.
+
+```cpp
+std::vector<Row>& rows()
+const std::vector<Row>& rows() const
+void rows(std::vector<Row> rows)
+```
+
+**Returns:** Reference to the vector of rows
+
+**Example:**
+```cpp
+Table table;
+table.rows({
+  Row({"Header1", "Header2"}),
+  Row({"Data1", "Data2"})
+});
+
+// Access all rows
+for (const auto& row : table.rows()) {
+  // Process each row
+}
+```
+
+### row()
+
+Accesses a specific row by index.
+
+```cpp
+Row& row(int index)
+const Row& row(int index) const
+Row& operator[](int index)
+const Row& operator[](int index) const
+```
+
+<ParamField path="index" type="int">
+  Zero-based index of the row to access
+</ParamField>
+
+**Returns:** Reference to the row at the specified index
+
+**Throws:** `std::out_of_range` if index is invalid
+
+**Example:**
+```cpp
+Table table;
+table.addRow({"A", "B", "C"});
+
+// Access row by index
+table.row(0).column(1).content("Modified");
+
+// Or using operator[]
+table[0].column(2).content("Changed");
+```
+
+### border()
+
+Gets or sets the table's border style.
+
+```cpp
+Border& border()
+const Border& border() const
+void border(Border border)
+```
+
+**Returns:** Reference to the Border object
+
+**Example:**
+```cpp
+Table table;
+
+// Set border style
+table.border(Border::rounded());
+
+// Modify border parts
+table.border().horizontal().fg(Color::Blue);
+table.border().vertical().fg(Color::Green);
+```
+
+### config()
+
+Accesses the table's configuration settings.
+
+```cpp
+Config& config()
+const Config& config() const
+```
+
+**Returns:** Reference to the Config object
+
+**Example:**
+```cpp
+Table table;
+table.config().width(80);
+```
+
+### str()
+
+Generates the string representation of the table.
+
+```cpp
+const std::string& str() const
+```
+
+**Returns:** Const reference to the rendered table string
+
+**Note:** This method uses caching. The string is only regenerated when the table or its contents are modified.
+
+**Example:**
+```cpp
+Table table;
+table.addRow({"Name", "Age"});
+table.addRow({"Alice", "30"});
+
+std::cout << table.str() << std::endl;
+
+// Or use the render function for cross-platform support
+tabular::render(table.str(), stdout);
+```
+
+### clr()
+
+Clears all data from the table and resets configuration.
+
+```cpp
+void clr()
+```
+
+**Example:**
+```cpp
+Table table;
+table.addRow({"Data"});
+table.clr(); // Table is now empty
+```
+
+## Nested Classes
+
+### Table::Config
+
+Configuration class for table-level settings.
+
+#### Methods
+
+**width()**
+```cpp
+void width(const size_t width)
+size_t width() const
+```
+
+Sets or gets the total width of the table in characters.
+
+<ParamField path="width" type="size_t">
+  Total width of the table (default: 50)
+</ParamField>
+
+**Example:**
+```cpp
+table.config().width(100);
+size_t w = table.config().width();
+```
+
+**reset()**
+```cpp
+void reset()
+```
+
+Resets configuration to default values.
+
+## Complete Example
+
+```cpp
+#include <tabular/table.h>
+#include <tabular/render.h>
+using namespace tabular;
+
+int main() {
+  // Create table with modern border
+  Table table;
+  table.border(Border::rounded());
+  table.config().width(60);
+  
+  // Add header row
+  table.addRow({"Name", "Age", "City"})
+       .row(0).config().hasBottom(true);
+  
+  // Add data rows
+  table.addRow({"Alice", "30", "New York"})
+       .addRow({"Bob", "25", "Los Angeles"})
+       .addRow({"Carol", "28", "San Francisco"});
+  
+  // Customize columns in first row
+  table[0].column(0).style().fg(Color::BrightCyan).attrs(Attr::Bold);
+  table[0].column(1).style().fg(Color::BrightCyan).attrs(Attr::Bold);
+  table[0].column(2).style().fg(Color::BrightCyan).attrs(Attr::Bold);
+  
+  // Render the table
+  render(table.str(), stdout);
+  
+  return 0;
+}
+```
+
+## See Also
+
+- [Row](/api/row) - Row class reference
+- [Border](/api/border) - Border styling options
+- [Column](/api/column) - Column configuration
+- [render()](/api/render) - Cross-platform rendering function

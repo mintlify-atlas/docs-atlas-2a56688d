@@ -1,0 +1,385 @@
+---
+title: 'Alignment & Padding'
+description: 'Enums and structs for text alignment, padding, and attributes'
+---
+
+## Overview
+
+This page documents the alignment, padding, and text attribute types used throughout Tabular for layout and styling control.
+
+## Align Enum
+
+### Definition
+
+```cpp
+namespace tabular {
+  enum class Align {
+    Left,
+    Right,
+    Center
+  };
+}
+```
+
+### Values
+
+- **`Align::Left`** - Align text to the left (default)
+- **`Align::Center`** - Center text horizontally
+- **`Align::Right`** - Align text to the right
+
+### Usage
+
+Used in `Column::Config` to control text alignment within columns.
+
+**Example:**
+```cpp
+using namespace tabular;
+
+Column col("Text");
+col.config().align(Align::Center);
+```
+
+**Visual Example:**
+```cpp
+Table table;
+table.config().width(60);
+
+table.addRow({"Left", "Center", "Right"});
+table[0].column(0).config().align(Align::Left);
+table[0].column(1).config().align(Align::Center);
+table[0].column(2).config().align(Align::Right);
+```
+
+## Padd Struct
+
+### Definition
+
+```cpp
+namespace tabular {
+  struct Padd {
+    uint8_t top;
+    uint8_t bottom;
+    uint8_t left;
+    uint8_t right;
+  };
+}
+```
+
+### Fields
+
+<ParamField path="top" type="uint8_t">
+  Number of empty lines above content (default: 0)
+</ParamField>
+
+<ParamField path="bottom" type="uint8_t">
+  Number of empty lines below content (default: 0)
+</ParamField>
+
+<ParamField path="left" type="uint8_t">
+  Number of spaces to the left of content (default: 1)
+</ParamField>
+
+<ParamField path="right" type="uint8_t">
+  Number of spaces to the right of content (default: 1)
+</ParamField>
+
+### Constructors
+
+**Default Constructor**
+```cpp
+constexpr Padd()
+```
+
+Creates padding with default values: `top=0`, `bottom=0`, `left=1`, `right=1`
+
+**Symmetric Constructor**
+```cpp
+constexpr Padd(uint8_t vertical, uint8_t horizontal)
+```
+
+<ParamField path="vertical" type="uint8_t">
+  Sets both top and bottom padding
+</ParamField>
+<ParamField path="horizontal" type="uint8_t">
+  Sets both left and right padding
+</ParamField>
+
+**Example:**
+```cpp
+Padd p(1, 2);  // top=1, bottom=1, left=2, right=2
+```
+
+**Full Constructor**
+```cpp
+constexpr Padd(uint8_t top, uint8_t bottom, uint8_t left, uint8_t right)
+```
+
+**Example:**
+```cpp
+Padd p(1, 2, 3, 4);  // top=1, bottom=2, left=3, right=4
+```
+
+### Usage
+
+Used in `Column::Config` to add spacing around column content.
+
+**Example:**
+```cpp
+using namespace tabular;
+
+Column col("Content");
+
+// Symmetric padding
+col.config().padd(Padd(1, 2));  // 1 vertical, 2 horizontal
+
+// Custom padding for each side
+col.config().padd(Padd(2, 1, 3, 3));  // 2 top, 1 bottom, 3 left, 3 right
+```
+
+## Attr Enum
+
+### Definition
+
+```cpp
+namespace tabular {
+  enum class Attr : uint16_t {
+    Bold       = 1,
+    Dim        = 1 << 1,
+    Italic     = 1 << 2,
+    Underline  = 1 << 3,
+    Dunderline = 1 << 4,
+    Blink      = 1 << 5,
+    Flink      = 1 << 6,
+    Reverse    = 1 << 7,
+    Concealed  = 1 << 8,
+    Crossed    = 1 << 9,
+  };
+}
+```
+
+### Values
+
+- **`Attr::Bold`** - Bold/bright text
+- **`Attr::Dim`** - Dimmed text (less bright)
+- **`Attr::Italic`** - Italic text
+- **`Attr::Underline`** - Single underline
+- **`Attr::Dunderline`** - Double underline (not widely supported)
+- **`Attr::Blink`** - Slow blink (rarely supported)
+- **`Attr::Flink`** - Fast blink (rarely supported)
+- **`Attr::Reverse`** - Swap foreground and background colors
+- **`Attr::Concealed`** - Hidden text
+- **`Attr::Crossed`** - Strikethrough text
+
+### Operators
+
+Attributes can be combined using the bitwise OR operator:
+
+```cpp
+Attr operator|(Attr lhs, Attr rhs)
+Attr& operator|=(Attr& lhs, const Attr rhs)
+```
+
+**Example:**
+```cpp
+Attr combined = Attr::Bold | Attr::Underline;
+```
+
+### Usage
+
+Used in `Column::Style` to apply text formatting attributes.
+
+**Example:**
+```cpp
+using namespace tabular;
+
+Column col("Styled Text");
+
+// Single attribute
+col.style().attrs(Attr::Bold);
+
+// Multiple attributes
+col.style().attrs(Attr::Bold | Attr::Underline);
+
+// Combining with colors
+col.style()
+   .fg(Color::Green)
+   .attrs(Attr::Bold | Attr::Italic);
+```
+
+## Examples
+
+### Alignment Examples
+
+```cpp
+#include <tabular/table.h>
+using namespace tabular;
+
+Table table;
+table.config().width(70);
+
+// Create row with different alignments
+table.addRow({"Left Aligned", "Center Aligned", "Right Aligned"});
+table[0].column(0).config().align(Align::Left);
+table[0].column(1).config().align(Align::Center);
+table[0].column(2).config().align(Align::Right);
+```
+
+### Padding Examples
+
+```cpp
+using namespace tabular;
+
+// No padding
+Column col1("Tight");
+col1.config().padd(Padd(0, 0, 0, 0));
+
+// Default padding (1 space left/right)
+Column col2("Default");
+col2.config().padd(Padd());
+
+// Extra horizontal padding
+Column col3("Spacious");
+col3.config().padd(Padd(0, 3));  // 3 spaces on each side
+
+// Vertical padding
+Column col4("Tall");
+col4.config().padd(Padd(2, 0));  // 2 empty lines above and below
+
+// Custom padding for all sides
+Column col5("Custom");
+col5.config().padd(Padd(1, 1, 2, 2));
+```
+
+### Text Attributes Examples
+
+```cpp
+using namespace tabular;
+
+// Bold text
+Column bold("Bold");
+bold.style().attrs(Attr::Bold);
+
+// Italic text
+Column italic("Italic");
+italic.style().attrs(Attr::Italic);
+
+// Underlined text
+Column underlined("Underlined");
+underlined.style().attrs(Attr::Underline);
+
+// Bold and underlined
+Column combined("Bold + Underline");
+combined.style().attrs(Attr::Bold | Attr::Underline);
+
+// Multiple attributes
+Column multi("Multi");
+multi.style().attrs(Attr::Bold | Attr::Italic | Attr::Underline);
+```
+
+### Styled Header Row
+
+```cpp
+using namespace tabular;
+
+Table table;
+table.border(Border::modern());
+
+// Add header row
+table.addRow({"Name", "Status", "Score"});
+
+// Style the entire header row
+for (auto& col : table[0].columns()) {
+  col.style()
+     .fg(Color::BrightWhite)
+     .bg(Color::Blue)
+     .attrs(Attr::Bold);
+  col.config()
+     .align(Align::Center)
+     .padd(Padd(0, 2));  // Extra horizontal padding
+}
+
+table[0].config().hasBottom(true);
+```
+
+### Dimmed Footer Row
+
+```cpp
+using namespace tabular;
+
+table.addRow({"Total", "---", "100"});
+
+int lastRow = table.rows().size() - 1;
+for (auto& col : table[lastRow].columns()) {
+  col.style().attrs(Attr::Dim);
+  col.config().align(Align::Right);
+}
+```
+
+### Reverse Video Effect
+
+```cpp
+Column highlighted("IMPORTANT");
+highlighted.style()
+           .fg(Color::White)
+           .bg(Color::Red)
+           .attrs(Attr::Bold | Attr::Reverse);  // Swap fg/bg
+```
+
+### Crossed/Strikethrough Text
+
+```cpp
+Column deleted("Deprecated");
+deleted.style()
+       .fg(Color::Red)
+       .attrs(Attr::Crossed | Attr::Dim);
+```
+
+## Terminal Support
+
+### Well-Supported Attributes
+
+- `Attr::Bold` - Universally supported
+- `Attr::Italic` - Widely supported in modern terminals
+- `Attr::Underline` - Universally supported
+- `Attr::Reverse` - Universally supported
+- `Attr::Dim` - Widely supported
+- `Attr::Crossed` - Supported in most modern terminals
+
+### Limited Support Attributes
+
+- `Attr::Dunderline` - Limited support (double underline)
+- `Attr::Blink` - Rarely supported (often disabled)
+- `Attr::Flink` - Rarely supported (fast blink)
+- `Attr::Concealed` - Limited support (hidden text)
+
+## Constants
+
+### RESET_ESC
+
+```cpp
+constexpr auto RESET_ESC = "\x1b[0m";
+```
+
+ANSI escape sequence to reset all styling attributes.
+
+### DEFAULT_WIDTH
+
+```cpp
+constexpr uint64_t DEFAULT_WIDTH = 50;
+```
+
+Default table width in characters.
+
+### MIN_COLUMN_WIDTH
+
+```cpp
+constexpr uint8_t MIN_COLUMN_WIDTH = 2;
+```
+
+Minimum width for a column in characters.
+
+## See Also
+
+- [Column](/api/column) - Column configuration and styling
+- [Color](/api/color) - Color and RGB reference
+- [Table](/api/table) - Table class reference

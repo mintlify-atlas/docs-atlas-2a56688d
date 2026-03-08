@@ -1,0 +1,180 @@
+---
+title: Installation
+description: Install Tabular using CMake or include the header files directly
+---
+
+## Requirements
+
+Before installing Tabular, ensure you have:
+
+- **C++ Compiler**: Supporting C++11 or later
+- **CMake**: Version 3.15 or higher (for CMake installation method)
+- **Platform**: Linux, macOS, or Windows
+
+## Installation Methods
+
+Tabular offers two installation methods to fit your project needs:
+
+<CardGroup cols={2}>
+  <Card title="CMake Installation" icon="gear">
+    Full CMake integration with package configuration
+  </Card>
+  <Card title="Header-Only Include" icon="file-code">
+    Direct include for quick setup
+  </Card>
+</CardGroup>
+
+### Method 1: CMake Installation
+
+<Steps>
+  <Step title="Clone the repository">
+    First, clone the Tabular repository to your local machine:
+    
+    ```bash
+    git clone https://github.com/Anas-Hamdane/tabular.git
+    cd tabular
+    ```
+  </Step>
+
+  <Step title="Configure the project">
+    Create a build directory and configure the project with CMake:
+    
+    ```bash
+    mkdir build
+    cd build
+    cmake ..
+    ```
+    
+    The CMakeLists.txt configures Tabular as an interface library:
+    
+    ```cmake
+    cmake_minimum_required(VERSION 3.15)
+    project(tabular
+            VERSION 1.5.2
+            DESCRIPTION "lightweight, header-only C++ library for creating well-formatted, fully-customizable CLI tables."
+            LANGUAGES CXX)
+
+    add_library(tabular INTERFACE)
+    add_library(tabular::tabular ALIAS tabular)
+    
+    target_compile_features(tabular INTERFACE cxx_std_11)
+    target_include_directories(tabular INTERFACE
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include>
+    )
+    ```
+  </Step>
+
+  <Step title="Install the library">
+    Install Tabular to your system:
+    
+    ```bash
+    sudo cmake --install .
+    ```
+    
+    This installs:
+    - Header files to `${CMAKE_INSTALL_INCLUDEDIR}/tabular`
+    - CMake config files to `${CMAKE_INSTALL_LIBDIR}/cmake/tabular`
+  </Step>
+
+  <Step title="Use in your CMake project">
+    Add Tabular to your project's CMakeLists.txt:
+    
+    ```cmake
+    find_package(tabular 1.5.2 REQUIRED)
+    
+    add_executable(my_app main.cpp)
+    target_link_libraries(my_app PRIVATE tabular::tabular)
+    ```
+  </Step>
+</Steps>
+
+### Method 2: Header-Only Include
+
+For a quick setup without CMake, you can directly include the header files in your project.
+
+<Steps>
+  <Step title="Choose your include method">
+    You have two options:
+    
+    **Option A: Single-header file** (Recommended for simplicity)
+    
+    Download and include the single-header file:
+    
+    ```bash
+    wget https://raw.githubusercontent.com/Anas-Hamdane/tabular/master/single_include/tabular/tabular.h
+    ```
+    
+    **Option B: Multiple header files**
+    
+    Copy the entire `include/tabular` directory to your project.
+  </Step>
+
+  <Step title="Include in your code">
+    For the single-header approach:
+    
+    ```cpp
+    #include "tabular.h"
+    ```
+    
+    For multiple headers:
+    
+    ```cpp
+    #include "tabular/table.h"
+    #include "tabular/render.h"
+    ```
+  </Step>
+
+  <Step title="Compile your code">
+    Compile with C++11 or later:
+    
+    ```bash
+    g++ -std=c++11 main.cpp -o my_app
+    ```
+    
+    Or with clang:
+    
+    ```bash
+    clang++ -std=c++11 main.cpp -o my_app
+    ```
+  </Step>
+</Steps>
+
+<Note>
+Tabular is a header-only library, so there's no need to link against any compiled libraries. Just include the headers and you're ready to go!
+</Note>
+
+## Verify Installation
+
+Create a simple test file to verify your installation:
+
+```cpp
+#include "tabular/table.h"
+#include "tabular/render.h"
+
+int main()
+{
+  using namespace tabular;
+  Table table;
+  
+  table.addRow({"Hello", "Tabular!"});
+  
+  render(table.str() + '\n', stdout);
+  return 0;
+}
+```
+
+Compile and run:
+
+```bash
+g++ -std=c++11 test.cpp -o test
+./test
+```
+
+If you see a formatted table, the installation was successful!
+
+## Next Steps
+
+<Card title="Quick Start Guide" icon="rocket" href="/quickstart">
+  Learn how to create your first table with a step-by-step tutorial
+</Card>

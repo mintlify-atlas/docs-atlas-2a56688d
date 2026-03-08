@@ -1,0 +1,234 @@
+---
+title: Border Customization
+description: Customize table borders with pre-defined styles or create custom borders
+---
+
+## Border Class Overview
+
+The `Border` class manages all border characters for your table, including corners, lines, and connectors.
+
+```cpp
+namespace tabular {
+  class Border {
+    // ... border parts and methods
+  };
+}
+```
+
+## Pre-defined Border Styles
+
+Tabular provides several built-in border styles for quick customization.
+
+### Modern (Default)
+
+Clean, modern Unicode box-drawing characters:
+
+```cpp
+table.border(Border::modern());
+```
+
+**Characters used:**
+- Horizontal: `─` (U+2500)
+- Vertical: `│` (U+2502)
+- Corners: `┌` `┐` `└` `┘`
+- Connectors: `├` `┤` `┬` `┴`
+- Intersection: `┼`
+
+### Rounded
+
+Softer appearance with rounded corners:
+
+```cpp
+table.border(Border::rounded());
+```
+
+**Characters used:**
+- Horizontal: `─` (U+2500)
+- Vertical: `│` (U+2502)
+- Corners: `╭` `╮` `╰` `╯`
+- Connectors: `├` `┤` `┬` `┴`
+- Intersection: `┼`
+
+### Heavy
+
+Bold, heavy lines for emphasis:
+
+```cpp
+table.border(Border::heavy());
+```
+
+**Characters used:**
+- Horizontal: `━` (U+2501)
+- Vertical: `┃` (U+2503)
+- Corners: `┏` `┓` `┗` `┛`
+- Connectors: `┣` `┫` `┳` `┻`
+- Intersection: `╋`
+
+### Double
+
+Double-line borders:
+
+```cpp
+table.border(Border::doubled());
+```
+
+**Characters used:**
+- Horizontal: `═` (U+2550)
+- Vertical: `║` (U+2551)
+- Corners: `╔` `╗` `╚` `╝`
+- Connectors: `╠` `╣` `╦` `╩`
+- Intersection: `╬`
+
+### ASCII Borders
+
+For terminals that don't support Unicode, the default ASCII border is used:
+
+```cpp
+Border border; // Default constructor uses ASCII
+```
+
+**Characters used:**
+- Horizontal: `-`
+- Vertical: `|`
+- Corners and connectors: `+`
+
+### Other Border Styles
+
+```cpp
+// No borders
+table.border(Border::none());
+
+// Space borders (invisible but maintains structure)
+table.border(Border::blank());
+
+// Filled with a specific character
+table.border(Border::filled('*'));
+```
+
+## Custom Border Parts
+
+You can customize individual border components for complete control.
+
+### Border Components
+
+A border consists of 11 different parts:
+
+| Part | Description | Position |
+|------|-------------|----------|
+| `horizontal()` | Top and bottom lines | `─────` |
+| `vertical()` | Left and right lines | `│` |
+| `cornerTopLeft()` | Top-left corner | `┌` |
+| `cornerTopRight()` | Top-right corner | `┐` |
+| `cornerBottomLeft()` | Bottom-left corner | `└` |
+| `cornerBottomRight()` | Bottom-right corner | `┘` |
+| `connectorTop()` | Column separator (top) | `┬` |
+| `connectorBottom()` | Column separator (bottom) | `┴` |
+| `connectorLeft()` | Row separator (left) | `├` |
+| `connectorRight()` | Row separator (right) | `┤` |
+| `intersection()` | Cross intersection | `┼` |
+
+### Setting Border Characters
+
+There are two ways to set border characters:
+
+```cpp
+Border border;
+
+// Method 1: Direct setter
+border.horizontal('=');
+
+// Method 2: Access Part and set glyph
+border.horizontal().glyph('=');
+```
+
+### Custom Border Example
+
+```cpp
+Border border;
+
+// Customize specific parts
+border.horizontal('=');
+border.vertical('‖');
+border.cornerTopLeft('◢');
+border.cornerTopRight('◣');
+border.cornerBottomLeft('◥');
+border.cornerBottomRight('◤');
+
+table.border(border);
+```
+
+## Border Coloring
+
+Each border part can be individually colored using foreground and background colors.
+
+### Setting Border Colors
+
+```cpp
+Border border;
+
+// Set foreground color using terminal colors
+border.horizontal().fg(Color::Red);
+
+// Set foreground color using RGB
+border.horizontal().fg(Rgb{255, 0, 0});
+
+// Set background color
+border.horizontal().bg(Color::Green);
+border.horizontal().bg(Rgb{0, 255, 0});
+```
+
+### Complete Colored Border Example
+
+```cpp
+Border border = Border::modern();
+
+// Color all horizontal lines red
+border.horizontal().fg(Color::BrightRed);
+
+// Color all vertical lines blue
+border.vertical().fg(Color::BrightBlue);
+
+// Color corners green
+border.cornerTopLeft().fg(Color::BrightGreen);
+border.cornerTopRight().fg(Color::BrightGreen);
+border.cornerBottomLeft().fg(Color::BrightGreen);
+border.cornerBottomRight().fg(Color::BrightGreen);
+
+// Color connectors yellow
+border.connectorTop().fg(Color::BrightYellow);
+border.connectorBottom().fg(Color::BrightYellow);
+border.connectorLeft().fg(Color::BrightYellow);
+border.connectorRight().fg(Color::BrightYellow);
+border.intersection().fg(Color::BrightYellow);
+
+table.border(border);
+```
+
+### Clearing Border Colors
+
+```cpp
+// Clear foreground color
+border.horizontal().clrFg();
+
+// Clear background color
+border.horizontal().clrBg();
+
+// Clear both colors
+border.horizontal().clr();
+```
+
+## Resetting Borders
+
+Reset the border to default ASCII style:
+
+```cpp
+border.reset();
+```
+
+<Note>
+Border colors support both terminal colors (like `Color::Red`) and RGB values (like `Rgb{255, 0, 0}`). RGB colors may not be supported in all terminal emulators.
+</Note>
+
+<Warning>
+When using Unicode border characters, ensure your terminal supports UTF-8 encoding for proper display.
+</Warning>

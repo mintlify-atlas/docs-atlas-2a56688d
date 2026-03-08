@@ -1,0 +1,327 @@
+---
+title: 'Color & RGB'
+description: 'Color enumerations and RGB struct for terminal colors'
+---
+
+## Overview
+
+Tabular supports both standard terminal colors via the `Color` enum and true-color (24-bit RGB) via the `Rgb` struct. These can be used to style table content and borders.
+
+## Color Enum
+
+### Definition
+
+```cpp
+namespace tabular {
+  enum class Color : uint8_t;
+}
+```
+
+### Values
+
+#### Standard Colors
+
+```cpp
+Color::Black    = 30
+Color::Red      = 31
+Color::Green    = 32
+Color::Yellow   = 33
+Color::Blue     = 34
+Color::Magenta  = 35
+Color::Cyan     = 36
+Color::White    = 37
+```
+
+#### Bright Colors
+
+```cpp
+Color::BrightBlack    = 90
+Color::BrightRed      = 91
+Color::BrightGreen    = 92
+Color::BrightYellow   = 93
+Color::BrightBlue     = 94
+Color::BrightMagenta  = 95
+Color::BrightCyan     = 96
+Color::BrightWhite    = 97
+```
+
+### Usage
+
+The `Color` enum is used for foreground and background colors in both columns and border parts.
+
+**Example:**
+```cpp
+using namespace tabular;
+
+// Foreground color
+col.style().fg(Color::Green);
+
+// Background color
+col.style().bg(Color::Black);
+
+// Border color
+table.border().horizontal().fg(Color::Blue);
+```
+
+## RGB Struct
+
+### Definition
+
+```cpp
+namespace tabular {
+  struct Rgb {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+  };
+}
+```
+
+### Constructors
+
+**Default Constructor**
+```cpp
+constexpr Rgb()
+```
+
+Creates an RGB color with all components set to 0 (black).
+
+**Component Constructor**
+```cpp
+constexpr Rgb(uint8_t r, uint8_t g, uint8_t b)
+```
+
+<ParamField path="r" type="uint8_t">
+  Red component (0-255)
+</ParamField>
+<ParamField path="g" type="uint8_t">
+  Green component (0-255)
+</ParamField>
+<ParamField path="b" type="uint8_t">
+  Blue component (0-255)
+</ParamField>
+
+**Example:**
+```cpp
+Rgb orange(255, 165, 0);
+Rgb purple(128, 0, 128);
+```
+
+**Hex Constructor**
+```cpp
+constexpr Rgb(uint32_t hex)
+```
+
+<ParamField path="hex" type="uint32_t">
+  Hexadecimal color value (e.g., 0xFF5733)
+</ParamField>
+
+**Example:**
+```cpp
+Rgb color1(0xFF5733);  // Orange
+Rgb color2(0x00FF00);  // Green
+Rgb color3(0x1E90FF);  // Dodger Blue
+```
+
+### Methods
+
+**toHex()**
+```cpp
+constexpr uint32_t toHex() const
+```
+
+Converts the RGB color to a hexadecimal value.
+
+**Returns:** 24-bit hex value (0xRRGGBB)
+
+**Example:**
+```cpp
+Rgb color(255, 100, 50);
+uint32_t hex = color.toHex();  // 0xFF6432
+```
+
+### Usage
+
+The `Rgb` struct provides true-color support for terminals that support 24-bit colors.
+
+**Example:**
+```cpp
+using namespace tabular;
+
+// Using RGB components
+col.style().fg(Rgb(255, 100, 50));
+
+// Using hex values
+col.style().bg(Rgb(0x2C3E50));
+
+// Border with RGB colors
+table.border().horizontal().fg(Rgb(100, 150, 255));
+```
+
+## Examples
+
+### Using Standard Colors
+
+```cpp
+#include <tabular/table.h>
+using namespace tabular;
+
+Table table;
+table.addRow({"Error", "Warning", "Success"});
+
+// Red text
+table[0].column(0).style().fg(Color::Red);
+
+// Yellow text
+table[0].column(1).style().fg(Color::Yellow);
+
+// Green text
+table[0].column(2).style().fg(Color::Green);
+```
+
+### Using Bright Colors
+
+```cpp
+using namespace tabular;
+
+Column header("HEADER");
+header.style()
+      .fg(Color::BrightCyan)
+      .bg(Color::Black)
+      .attrs(Attr::Bold);
+```
+
+### Using RGB Colors
+
+```cpp
+using namespace tabular;
+
+Column col("Custom Colors");
+
+// Orange text on dark background
+col.style()
+   .fg(Rgb(255, 165, 0))      // Orange
+   .bg(Rgb(30, 30, 30));      // Dark gray
+```
+
+### Using Hex Colors
+
+```cpp
+using namespace tabular;
+
+Column col("Hex Colors");
+
+// Using popular hex colors
+col.style()
+   .fg(Rgb(0xFF6B35))         // Vivid orange
+   .bg(Rgb(0x2C3E50));        // Midnight blue
+```
+
+### Gradient-Like Effect
+
+```cpp
+using namespace tabular;
+
+Table table;
+table.addRow({"Red", "Orange", "Yellow", "Green", "Blue"});
+
+table[0].column(0).style().fg(Rgb(255, 0, 0));      // Red
+table[0].column(1).style().fg(Rgb(255, 165, 0));    // Orange
+table[0].column(2).style().fg(Rgb(255, 255, 0));    // Yellow
+table[0].column(3).style().fg(Rgb(0, 255, 0));      // Green
+table[0].column(4).style().fg(Rgb(0, 0, 255));      // Blue
+```
+
+### Colored Border with RGB
+
+```cpp
+using namespace tabular;
+
+Table table;
+table.border(Border::modern());
+
+// Purple-ish border
+Rgb borderColor(138, 43, 226);  // Blue Violet
+
+table.border().horizontal().fg(borderColor);
+table.border().vertical().fg(borderColor);
+table.border().cornerTopLeft().fg(borderColor);
+table.border().cornerTopRight().fg(borderColor);
+table.border().cornerBottomLeft().fg(borderColor);
+table.border().cornerBottomRight().fg(borderColor);
+table.border().intersection().fg(borderColor);
+table.border().connectorLeft().fg(borderColor);
+table.border().connectorRight().fg(borderColor);
+table.border().connectorTop().fg(borderColor);
+table.border().connectorBottom().fg(borderColor);
+```
+
+### Status Colors
+
+```cpp
+using namespace tabular;
+
+// Common status color palette
+Rgb success(46, 204, 113);    // Green
+Rgb warning(241, 196, 15);    // Yellow
+Rgb error(231, 76, 60);       // Red
+Rgb info(52, 152, 219);       // Blue
+
+Column successCol("✓ Success");
+successCol.style().fg(success);
+
+Column warningCol("⚠ Warning");
+warningCol.style().fg(warning);
+
+Column errorCol("✗ Error");
+errorCol.style().fg(error);
+
+Column infoCol("ℹ Info");
+infoCol.style().fg(info);
+```
+
+### Material Design Colors
+
+```cpp
+using namespace tabular;
+
+// Material Design color palette
+Rgb mdRed(0xF44336);
+Rgb mdPink(0xE91E63);
+Rgb mdPurple(0x9C27B0);
+Rgb mdIndigo(0x3F51B5);
+Rgb mdBlue(0x2196F3);
+Rgb mdCyan(0x00BCD4);
+Rgb mdTeal(0x009688);
+Rgb mdGreen(0x4CAF50);
+
+Column col("Material");
+col.style().fg(mdIndigo).attrs(Attr::Bold);
+```
+
+## Terminal Compatibility
+
+### Standard Colors (Color Enum)
+
+- **Support:** Widely supported across all terminals
+- **Colors:** 16 colors (8 standard + 8 bright)
+- **Use when:** Maximum compatibility is needed
+
+### RGB Colors (Rgb Struct)
+
+- **Support:** Modern terminals (24-bit true color support)
+- **Colors:** 16.7 million colors (256³)
+- **Use when:** Rich color accuracy is needed
+- **Terminals:** Most modern terminals support this:
+  - Windows Terminal
+  - iTerm2
+  - Alacritty
+  - Kitty
+  - GNOME Terminal (recent versions)
+  - VS Code integrated terminal
+
+## See Also
+
+- [Column](/api/column) - Column styling with colors
+- [Border](/api/border) - Border coloring
+- [Alignment](/api/alignment) - Text attributes (Attr enum)

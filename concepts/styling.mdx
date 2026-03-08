@@ -1,0 +1,246 @@
+---
+title: Styling and Colors
+description: Apply colors and text attributes to customize your table appearance
+---
+
+## Column Styling
+
+Each column can be individually styled using the `style()` method. The `Style` class provides control over text colors, background colors, and text attributes.
+
+```cpp
+table[0][0].style().fg(Color::Red)
+                  .bg(Color::White)
+                  .attrs(Attribute::Bold);
+```
+
+## Color Options
+
+Tabular supports two color systems: terminal colors and RGB colors.
+
+### Terminal Colors
+
+Use predefined terminal color constants:
+
+```cpp
+table[0][0].style().fg(Color::BrightRed);
+table[0][0].style().bg(Color::Blue);
+```
+
+**Available terminal colors:**
+- `Color::Black`
+- `Color::Red`
+- `Color::Green`
+- `Color::Yellow`
+- `Color::Blue`
+- `Color::Magenta`
+- `Color::Cyan`
+- `Color::White`
+- `Color::BrightBlack` (Gray)
+- `Color::BrightRed`
+- `Color::BrightGreen`
+- `Color::BrightYellow`
+- `Color::BrightBlue`
+- `Color::BrightMagenta`
+- `Color::BrightCyan`
+- `Color::BrightWhite`
+
+### RGB Colors
+
+For precise color control, use RGB values:
+
+```cpp
+// RGB struct: {red, green, blue}
+table[0][0].style().fg(Rgb{255, 0, 0});    // Bright red
+table[0][0].style().bg(Rgb{0, 255, 0});    // Bright green
+```
+
+<Note>
+RGB color support depends on your terminal emulator. Most modern terminals support RGB (true color), but some older ones may fall back to 256-color or 16-color palettes.
+</Note>
+
+## Color Types
+
+### Foreground Color (`fg`)
+
+Sets the text color:
+
+```cpp
+// Using terminal color
+table[0][0].style().fg(Color::Blue);
+
+// Using RGB
+table[0][0].style().fg(Rgb{100, 150, 200});
+```
+
+### Background Color (`bg`)
+
+Sets the background color behind the text:
+
+```cpp
+// Using terminal color
+table[0][0].style().bg(Color::Green);
+
+// Using RGB
+table[0][0].style().bg(Rgb{50, 50, 50});
+```
+
+### Base Color (`base`)
+
+Sets the background color for the entire column cell, including padding:
+
+```cpp
+// Using terminal color
+table[0][0].style().base(Color::Yellow);
+
+// Using RGB
+table[0][0].style().base(Rgb{255, 255, 200});
+```
+
+<Note>
+The `base()` color fills the entire column width, while `bg()` only colors behind the actual text content.
+</Note>
+
+## Text Attributes
+
+Text attributes modify the appearance of text beyond color.
+
+### Available Attributes
+
+```cpp
+Attr::Bold       // Bold/bright text
+Attr::Dim        // Dimmed text
+Attr::Italic     // Italic text
+Attr::Underline  // Single underline
+Attr::Dunderline // Double underline (rare support)
+Attr::Blink      // Blinking text
+Attr::Flink      // Fast blink (very rare support)
+Attr::Reverse    // Swap foreground and background
+Attr::Concealed  // Hidden text
+Attr::Crossed    // Strikethrough text
+```
+
+### Setting Single Attribute
+
+```cpp
+table[0][0].style().attrs(Attr::Bold);
+table[0][1].style().attrs(Attr::Italic);
+table[0][2].style().attrs(Attr::Underline);
+```
+
+### Combining Multiple Attributes
+
+Use the bitwise OR operator (`|`) to combine attributes:
+
+```cpp
+// Bold and underlined
+table[0][0].style().attrs(Attr::Bold | Attr::Underline);
+
+// Bold, italic, and underlined
+table[0][0].style().attrs(Attr::Bold | Attr::Italic | Attr::Underline);
+```
+
+<Warning>
+Text attribute support varies by terminal emulator. Not all terminals support all attributes, especially `Dunderline`, `Flink`, and `Concealed`.
+</Warning>
+
+## Styling Examples
+
+### Header Styling
+
+```cpp
+Table table;
+table.addRow({"Product", "Price", "Status"})
+     .addRow({"Laptop", "$999", "Available"});
+
+// Style header row
+table[0][0].style().attrs(Attr::Bold)
+                  .fg(Color::Blue);
+
+table[0][1].style().attrs(Attr::Bold)
+                  .fg(Color::Blue);
+
+table[0][2].style().attrs(Attr::Bold)
+                  .fg(Color::Blue);
+```
+
+### Status Indicators
+
+```cpp
+// Green background for available
+table[1][2].style().fg(Color::Black)
+                  .bg(Color::Green)
+                  .attrs(Attr::Bold);
+
+// Red background for unavailable
+table[2][2].style().fg(Color::White)
+                  .bg(Color::Red)
+                  .attrs(Attr::Bold);
+```
+
+### Price Highlighting
+
+```cpp
+// Highlight price with custom RGB colors
+table[1][1].style().fg(Rgb{0, 200, 0})      // Green text
+                  .bg(Rgb{240, 240, 240})   // Light gray background
+                  .attrs(Attr::Bold);
+```
+
+### Complete Styled Table Example
+
+```cpp
+Table table;
+table.addRow({"Product", "Price", "Status"})
+     .addRow({"Laptop", "$999", "Available"});
+
+// Header row - bold blue text
+table[0][0].style().attrs(Attr::Bold)
+                  .fg(Color::Blue);
+
+// Price column - green with background
+table[1][1].style().fg(Color::Black)
+                  .bg(Color::Green)
+                  .attrs(Attr::Bold);
+
+// Multiple attributes
+table[0][2].style().attrs(Attr::Bold | Attr::Underline);
+
+// Base color fills entire cell
+table[1][0].style().base(Color::BrightBlack);
+```
+
+## Resetting Styles
+
+You can reset individual style components or all styles:
+
+```cpp
+// Reset individual colors
+table[0][0].style().resetFg();
+table[0][0].style().resetBg();
+table[0][0].style().resetBase();
+table[0][0].style().resetAttrs();
+
+// Reset all styles
+table[0][0].style().reset();
+```
+
+## Style Method Chaining
+
+All style methods return a reference to the `Style` object, allowing for fluent chaining:
+
+```cpp
+table[0][0].style()
+    .fg(Color::White)
+    .bg(Color::Blue)
+    .base(Color::BrightBlack)
+    .attrs(Attr::Bold | Attr::Italic);
+```
+
+## Color Summary
+
+| Method | Description | Parameters | Affects |
+|--------|-------------|------------|----------|
+| `fg()` | Foreground (text) color | `Color` or `Rgb` | Text only |
+| `bg()` | Background color | `Color` or `Rgb` | Behind text |
+| `base()` | Base color | `Color` or `Rgb` | Entire cell |
+| `attrs()` | Text attributes | `Attr` or combined with `\|` | Text appearance |

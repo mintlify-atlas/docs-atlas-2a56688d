@@ -1,0 +1,424 @@
+---
+title: 'Border'
+description: 'Border class for customizing table borders and separators'
+---
+
+## Overview
+
+The `Border` class defines the appearance of table borders, including lines, corners, and connectors. Tabular provides several pre-defined border styles and allows complete customization of individual border parts.
+
+## Class Definition
+
+```cpp
+namespace tabular {
+  class Border;
+}
+```
+
+## Border Parts
+
+A border consists of 11 distinct parts:
+
+- **horizontal** - Horizontal lines (top and bottom)
+- **vertical** - Vertical lines (left and right sides)
+- **cornerTopLeft** - Top-left corner
+- **cornerTopRight** - Top-right corner
+- **cornerBottomLeft** - Bottom-left corner
+- **cornerBottomRight** - Bottom-right corner
+- **connectorLeft** - Left T-connector (joins horizontal separator with left border)
+- **connectorRight** - Right T-connector
+- **connectorTop** - Top T-connector (joins vertical lines with top border)
+- **connectorBottom** - Bottom T-connector
+- **intersection** - Cross intersection (where horizontal and vertical separators meet)
+
+## Static Factory Methods
+
+### modern()
+
+```cpp
+static Border modern()
+```
+
+Creates a border with modern single-line box-drawing characters.
+
+**Characters:** `─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼`
+
+**Example:**
+```cpp
+using namespace tabular;
+
+Table table;
+table.border(Border::modern());
+```
+
+**Output:**
+```
+┌───────┬───────┐
+│ Name  │ Age   │
+├───────┼───────┤
+│ Alice │ 30    │
+└───────┴───────┘
+```
+
+### rounded()
+
+```cpp
+static Border rounded()
+```
+
+Creates a border with rounded corners.
+
+**Characters:** `─ │ ╭ ╮ ╰ ╯ ├ ┤ ┬ ┴ ┼`
+
+**Example:**
+```cpp
+table.border(Border::rounded());
+```
+
+**Output:**
+```
+╭───────┬───────╮
+│ Name  │ Age   │
+├───────┼───────┤
+│ Alice │ 30    │
+╰───────┴───────╯
+```
+
+### heavy()
+
+```cpp
+static Border heavy()
+```
+
+Creates a border with heavy (thick) box-drawing characters.
+
+**Characters:** `━ ┃ ┏ ┓ ┗ ┛ ┣ ┫ ┳ ┻ ╋`
+
+**Example:**
+```cpp
+table.border(Border::heavy());
+```
+
+**Output:**
+```
+┏━━━━━━━┳━━━━━━━┓
+┃ Name  ┃ Age   ┃
+┣━━━━━━━╋━━━━━━━┫
+┃ Alice ┃ 30    ┃
+┗━━━━━━━┻━━━━━━━┛
+```
+
+### doubled()
+
+```cpp
+static Border doubled()
+```
+
+Creates a border with double-line box-drawing characters.
+
+**Characters:** `═ ║ ╔ ╗ ╚ ╝ ╠ ╣ ╦ ╩ ╬`
+
+**Example:**
+```cpp
+table.border(Border::doubled());
+```
+
+**Output:**
+```
+╔═══════╦═══════╗
+║ Name  ║ Age   ║
+╠═══════╬═══════╣
+║ Alice ║ 30    ║
+╚═══════╩═══════╝
+```
+
+### blank()
+
+```cpp
+static Border blank()
+```
+
+Creates a border using space characters (invisible border with spacing).
+
+**Example:**
+```cpp
+table.border(Border::blank());
+```
+
+**Output:**
+```
+         
+  Name    Age   
+         
+  Alice   30    
+         
+```
+
+### none()
+
+```cpp
+static Border none()
+```
+
+Creates a border with no characters (completely invisible).
+
+**Example:**
+```cpp
+table.border(Border::none());
+```
+
+### filled()
+
+```cpp
+static Border filled(const uint32_t c)
+```
+
+Creates a border where all parts use the specified character.
+
+<ParamField path="c" type="uint32_t">
+  Unicode code point for the character to use
+</ParamField>
+
+**Example:**
+```cpp
+// Border made of asterisks
+table.border(Border::filled(U'*'));
+
+// Border made of hash symbols
+table.border(Border::filled(U'#'));
+```
+
+## Instance Methods
+
+### Accessing Border Parts
+
+Each border part can be accessed and modified:
+
+```cpp
+Part& horizontal()
+Part& vertical()
+Part& cornerTopLeft()
+Part& cornerTopRight()
+Part& cornerBottomLeft()
+Part& cornerBottomRight()
+Part& intersection()
+Part& connectorLeft()
+Part& connectorRight()
+Part& connectorTop()
+Part& connectorBottom()
+
+// Const versions
+const Part& horizontal() const
+// ... etc
+```
+
+**Example:**
+```cpp
+Border border = Border::modern();
+
+// Access and modify parts
+border.horizontal().fg(Color::Blue);
+border.vertical().fg(Color::Green);
+border.cornerTopLeft().glyph(U'╔');
+```
+
+### Setting Border Parts
+
+You can set the glyph for each part:
+
+```cpp
+Border& horizontal(const uint32_t glyph)
+Border& vertical(const uint32_t glyph)
+Border& cornerTopLeft(const uint32_t glyph)
+// ... etc
+```
+
+<ParamField path="glyph" type="uint32_t">
+  Unicode code point for the character
+</ParamField>
+
+**Example:**
+```cpp
+Border border;
+border.horizontal(U'═')
+      .vertical(U'║')
+      .cornerTopLeft(U'╔')
+      .cornerTopRight(U'╗');
+```
+
+### reset()
+
+```cpp
+void reset()
+```
+
+Resets the border to default ASCII characters (`-`, `|`, `+`).
+
+**Example:**
+```cpp
+border.reset();
+```
+
+## Border::Part Class
+
+Represents a single border element with its character and styling.
+
+### Constructor
+
+```cpp
+Part(const uint32_t glyph)
+```
+
+<ParamField path="glyph" type="uint32_t">
+  Unicode code point for the character
+</ParamField>
+
+### Methods
+
+**glyph()**
+```cpp
+Part& glyph(const uint32_t glyph)
+uint32_t glyph() const
+```
+
+Sets or gets the Unicode character for this part.
+
+**fg()**
+```cpp
+Part& fg(const Color color)
+Part& fg(const Rgb rgb)
+uint32_t fg() const
+```
+
+Sets the foreground color of the border part.
+
+**bg()**
+```cpp
+Part& bg(const Color color)
+Part& bg(const Rgb rgb)
+uint32_t bg() const
+```
+
+Sets the background color of the border part.
+
+**clr() / clrFg() / clrBg()**
+```cpp
+Part& clr()      // Clear all colors
+Part& clrFg()    // Clear foreground
+Part& clrBg()    // Clear background
+```
+
+Clears color styling.
+
+**str()**
+```cpp
+const std::string& str() const
+```
+
+Returns the rendered string for this border part (with colors).
+
+## Examples
+
+### Custom Border Style
+
+```cpp
+#include <tabular/table.h>
+using namespace tabular;
+
+Table table;
+Border customBorder;
+
+customBorder.horizontal(U'═')
+            .vertical(U'║')
+            .cornerTopLeft(U'╔')
+            .cornerTopRight(U'╗')
+            .cornerBottomLeft(U'╚')
+            .cornerBottomRight(U'╝')
+            .connectorLeft(U'╠')
+            .connectorRight(U'╣')
+            .connectorTop(U'╦')
+            .connectorBottom(U'╩')
+            .intersection(U'╬');
+
+table.border(customBorder);
+```
+
+### Colored Border
+
+```cpp
+using namespace tabular;
+
+Table table;
+table.border(Border::modern());
+
+// Color all horizontal parts blue
+table.border().horizontal().fg(Color::BrightBlue);
+table.border().connectorTop().fg(Color::BrightBlue);
+table.border().connectorBottom().fg(Color::BrightBlue);
+
+// Color all vertical parts green
+table.border().vertical().fg(Color::BrightGreen);
+table.border().connectorLeft().fg(Color::BrightGreen);
+table.border().connectorRight().fg(Color::BrightGreen);
+
+// Color corners and intersections cyan
+table.border().cornerTopLeft().fg(Color::BrightCyan);
+table.border().cornerTopRight().fg(Color::BrightCyan);
+table.border().cornerBottomLeft().fg(Color::BrightCyan);
+table.border().cornerBottomRight().fg(Color::BrightCyan);
+table.border().intersection().fg(Color::BrightCyan);
+```
+
+### Mixed Border Styles
+
+```cpp
+using namespace tabular;
+
+Border border = Border::modern();
+
+// Use rounded corners with modern lines
+border.cornerTopLeft(U'╭')
+      .cornerTopRight(U'╮')
+      .cornerBottomLeft(U'╰')
+      .cornerBottomRight(U'╯');
+
+table.border(border);
+```
+
+### ASCII-Only Border
+
+```cpp
+Border asciiBorder;
+asciiBorder.horizontal(U'-')
+           .vertical(U'|')
+           .cornerTopLeft(U'+')
+           .cornerTopRight(U'+')
+           .cornerBottomLeft(U'+')
+           .cornerBottomRight(U'+')
+           .connectorLeft(U'+')
+           .connectorRight(U'+')
+           .connectorTop(U'+')
+           .connectorBottom(U'+')
+           .intersection(U'+');
+
+table.border(asciiBorder);
+```
+
+### RGB Colored Border
+
+```cpp
+using namespace tabular;
+
+table.border(Border::heavy());
+
+// Gradient-like colors
+table.border().horizontal().fg(Rgb(100, 150, 255));
+table.border().vertical().fg(Rgb(150, 100, 255));
+table.border().intersection().fg(Rgb(125, 125, 255));
+```
+
+## See Also
+
+- [Table](/api/table) - Table class reference
+- [Color](/api/color) - Color and RGB reference
+- [Row](/api/row) - Row configuration

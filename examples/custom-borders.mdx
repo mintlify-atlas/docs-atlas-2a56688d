@@ -1,0 +1,366 @@
+---
+title: Custom Border Examples
+description: Learn how to customize table borders with pre-defined styles and custom parts
+---
+
+## Pre-defined Border Styles
+
+Tabular provides several pre-defined border styles that you can apply to your tables using static methods from the `Border` class.
+
+### Modern Style
+
+Clean, thin Unicode box-drawing characters:
+
+```cpp
+Table table;
+table.addRow({"Countries Capitals"})
+     .addRow({"United States", "Washington"})
+     .addRow({"Brazil", "Brasilia"})
+     .addRow({"France", "Paris"});
+
+table.border(Border::modern());
+render(table.str() + '\n', stdout);
+```
+
+**Characters used:**
+- Horizontal: `─`
+- Vertical: `│`
+- Corners: `┌`, `┐`, `└`, `┘`
+- Connectors: `├`, `┤`, `┬`, `┴`, `┼`
+
+### Rounded Style
+
+Soft, rounded corners with thin lines:
+
+```cpp
+Table table;
+table.addRow({"ID", "Name", "Status"})
+     .addRow({"001", "Alice", "Active"})
+     .addRow({"002", "Bob", "Inactive"});
+
+table.border(Border::rounded());
+render(table.str() + '\n', stdout);
+```
+
+**Characters used:**
+- Horizontal: `─`
+- Vertical: `│`
+- Corners: `╭`, `╮`, `╰`, `╯` (rounded)
+- Connectors: `├`, `┤`, `┬`, `┴`, `┼`
+
+### Heavy Style
+
+Bold, thick lines for emphasis:
+
+```cpp
+Table table;
+table.addRow({"Product", "Price"})
+     .addRow({"Laptop", "$999"})
+     .addRow({"Mouse", "$25"});
+
+table.border(Border::heavy());
+render(table.str() + '\n', stdout);
+```
+
+**Characters used:**
+- Horizontal: `━`
+- Vertical: `┃`
+- Corners: `┏`, `┓`, `┗`, `┛`
+- Connectors: `┣`, `┫`, `┳`, `┻`, `╋`
+
+### Doubled Style
+
+Double-line borders:
+
+```cpp
+Table table;
+table.addRow({"Task", "Priority"})
+     .addRow({"Authentication", "High"})
+     .addRow({"Database", "Medium"});
+
+table.border(Border::doubled());
+render(table.str() + '\n', stdout);
+```
+
+**Characters used:**
+- Horizontal: `═`
+- Vertical: `║`
+- Corners: `╔`, `╗`, `╚`, `╝`
+- Connectors: `╠`, `╣`, `╦`, `╩`, `╬`
+
+### Blank Style
+
+Invisible borders with spaces (maintains table structure):
+
+```cpp
+Table table;
+table.addRow({"Column 1", "Column 2"})
+     .addRow({"Data 1", "Data 2"});
+
+table.border(Border::blank());
+render(table.str() + '\n', stdout);
+```
+
+**Use case:** When you want column alignment without visible borders.
+
+### None Style
+
+No borders at all (null characters):
+
+```cpp
+Table table;
+table.addRow({"Item 1", "Item 2"})
+     .addRow({"Value 1", "Value 2"});
+
+table.border(Border::none());
+render(table.str() + '\n', stdout);
+```
+
+**Use case:** Minimalist output without any border structure.
+
+## Comparing Border Styles
+
+<CodeGroup>
+```cpp Modern
+table.border(Border::modern());
+// Clean, professional appearance
+// Good for: Reports, dashboards
+```
+
+```cpp Rounded
+table.border(Border::rounded());
+// Friendly, modern look
+// Good for: User interfaces, CLI apps
+```
+
+```cpp Heavy
+table.border(Border::heavy());
+// Bold, attention-grabbing
+// Good for: Important data, summaries
+```
+
+```cpp Doubled
+table.border(Border::doubled());
+// Formal, structured appearance
+// Good for: Documentation, formal reports
+```
+
+```cpp Blank
+table.border(Border::blank());
+// Invisible structure
+// Good for: Aligned text, subtle layouts
+```
+</CodeGroup>
+
+## Custom Border Parts
+
+You can customize individual border components by creating a `Border` object and modifying specific parts.
+
+### Customizing Glyphs
+
+Change the characters used for border parts:
+
+```cpp
+Table table;
+table.addRow({"Header"})
+     .addRow({"Content"});
+
+Border border;
+
+// Use '=' for horizontal lines
+border.horizontal('=');
+// or explicitly
+border.horizontal().glyph('=');
+
+// Use '#' for vertical lines
+border.vertical('#');
+
+// Custom corners
+border.cornerTopLeft('*');
+border.cornerTopRight('*');
+border.cornerBottomLeft('*');
+border.cornerBottomRight('*');
+
+table.border(border);
+render(table.str() + '\n', stdout);
+```
+
+### Border Colors
+
+Apply colors to border parts using the `fg()` and `bg()` methods:
+
+<Tabs>
+<Tab title="Using Color Enum">
+
+```cpp
+Table table;
+table.addRow({"Status", "Message"})
+     .addRow({"OK", "System operational"});
+
+Border border = Border::modern();
+
+// Red horizontal lines
+border.horizontal().fg(Color::Red);
+
+// Blue vertical lines
+border.vertical().fg(Color::Blue);
+
+// Green corners
+border.cornerTopLeft().fg(Color::Green);
+border.cornerTopRight().fg(Color::Green);
+border.cornerBottomLeft().fg(Color::Green);
+border.cornerBottomRight().fg(Color::Green);
+
+table.border(border);
+render(table.str() + '\n', stdout);
+```
+
+</Tab>
+<Tab title="Using RGB">
+
+```cpp
+Table table;
+table.addRow({"Product", "Price"})
+     .addRow({"Laptop", "$999"});
+
+Border border = Border::rounded();
+
+// Custom RGB colors
+Rgb purple = {128, 0, 128};
+Rgb orange = {255, 165, 0};
+
+// Purple horizontal lines
+border.horizontal().fg(purple);
+
+// Orange vertical lines
+border.vertical().fg(orange);
+
+table.border(border);
+render(table.str() + '\n', stdout);
+```
+
+</Tab>
+<Tab title="Background Colors">
+
+```cpp
+Border border = Border::modern();
+
+// Set foreground color
+border.horizontal().fg(Color::White);
+
+// Set background color
+border.horizontal().bg(Color::Blue);
+
+// Both foreground and background
+border.vertical().fg(Rgb{255, 255, 255})
+                .bg(Rgb{0, 0, 255});
+
+table.border(border);
+```
+
+</Tab>
+</Tabs>
+
+## Border Part Reference
+
+All available border parts you can customize:
+
+| Method | Description | Default Glyph |
+|--------|-------------|---------------|
+| `horizontal()` | Horizontal lines | `-` |
+| `vertical()` | Vertical lines | `\|` |
+| `cornerTopLeft()` | Top-left corner | `+` |
+| `cornerTopRight()` | Top-right corner | `+` |
+| `cornerBottomLeft()` | Bottom-left corner | `+` |
+| `cornerBottomRight()` | Bottom-right corner | `+` |
+| `intersection()` | Four-way intersection | `+` |
+| `connectorLeft()` | Left T-junction | `+` |
+| `connectorRight()` | Right T-junction | `+` |
+| `connectorTop()` | Top T-junction | `-` |
+| `connectorBottom()` | Bottom T-junction | `-` |
+
+## Advanced Border Customization
+
+Create completely custom borders with mixed styles:
+
+```cpp
+Table table;
+table.addRow({"ID", "Name", "Status"})
+     .addRow({"001", "Alice", "Active"})
+     .addRow({"002", "Bob", "Inactive"})
+     .addRow({"003", "Charlie", "Active"});
+
+// Start with a base style
+Border border = Border::modern();
+
+// Customize specific parts
+border.horizontal().glyph(U'═').fg(Color::Cyan);
+border.vertical().glyph(U'│').fg(Color::Blue);
+
+// Custom corners with RGB
+Rgb gold = {255, 215, 0};
+border.cornerTopLeft().glyph(U'╔').fg(gold);
+border.cornerTopRight().glyph(U'╗').fg(gold);
+border.cornerBottomLeft().glyph(U'╚').fg(gold);
+border.cornerBottomRight().glyph(U'╝').fg(gold);
+
+// Color the connectors
+border.connectorLeft().fg(Color::Green);
+border.connectorRight().fg(Color::Green);
+border.connectorTop().fg(Color::Yellow);
+border.connectorBottom().fg(Color::Yellow);
+border.intersection().fg(Color::Magenta);
+
+table.border(border);
+render(table.str() + '\n', stdout);
+```
+
+## Clearing Border Colors
+
+You can remove colors from border parts:
+
+```cpp
+Border border = Border::modern();
+
+// Add colors
+border.horizontal().fg(Color::Red).bg(Color::Blue);
+
+// Clear foreground only
+border.horizontal().clrFg();
+
+// Clear background only
+border.horizontal().clrBg();
+
+// Clear both foreground and background
+border.horizontal().clr();
+```
+
+## Creating a Custom Border from Scratch
+
+```cpp
+Border border;
+
+// Set all parts manually
+border.horizontal(U'~');
+border.vertical(U'║');
+border.cornerTopLeft(U'◢');
+border.cornerTopRight(U'◣');
+border.cornerBottomLeft(U'◥');
+border.cornerBottomRight(U'◤');
+border.intersection(U'╬');
+border.connectorLeft(U'╠');
+border.connectorRight(U'╣');
+border.connectorTop(U'╦');
+border.connectorBottom(U'╩');
+
+// Apply colors
+Rgb cyan = {0, 255, 255};
+border.horizontal().fg(cyan);
+border.vertical().fg(cyan);
+
+table.border(border);
+```
+
+<Note>
+When using custom Unicode glyphs, ensure your terminal supports the characters you're using. Some terminals may not render certain Unicode characters correctly.
+</Note>

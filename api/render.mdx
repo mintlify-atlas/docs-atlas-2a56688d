@@ -1,0 +1,329 @@
+---
+title: 'render()'
+description: 'Cross-platform rendering function for table output'
+---
+
+## Overview
+
+The `render()` function provides cross-platform support for rendering tables with Unicode characters and ANSI colors. It handles platform-specific differences between Windows and Unix-like systems.
+
+## Function Signature
+
+```cpp
+namespace tabular {
+  void render(const std::string& str, FILE* out);
+}
+```
+
+## Parameters
+
+<ParamField path="str" type="const std::string&">
+  The string to render (typically from `Table::str()`)
+</ParamField>
+
+<ParamField path="out" type="FILE*">
+  Output file stream (`stdout`, `stderr`, or custom file pointer)
+</ParamField>
+
+## Purpose
+
+### Why Use render()?
+
+While you can use `std::cout << table.str()` on most platforms, the `render()` function provides:
+
+1. **Windows Unicode Support**: Properly handles UTF-8 to UTF-16 conversion on Windows console
+2. **Cross-Platform Consistency**: Works reliably across Windows, Linux, and macOS
+3. **Box-Drawing Characters**: Ensures correct display of Unicode box-drawing characters
+4. **ANSI Color Support**: Enables proper color rendering on Windows 10+ terminals
+
+### Platform Differences
+
+**On Unix/Linux/macOS:**
+- Uses `fwrite()` to write UTF-8 strings directly
+- Native UTF-8 support in most terminals
+
+**On Windows:**
+- Converts UTF-8 to UTF-16 using `MultiByteToWideChar()`
+- Uses `WriteConsoleW()` for proper Unicode rendering
+- Handles Windows console API directly
+- Fallback to `WriteFile()` when not writing to console
+
+## Usage
+
+### Basic Usage
+
+```cpp
+#include <tabular/table.h>
+#include <tabular/render.h>
+using namespace tabular;
+
+Table table;
+table.border(Border::modern());
+table.addRow({"Name", "Age", "City"});
+table.addRow({"Alice", "30", "NYC"});
+
+// Recommended: Use render() for cross-platform support
+render(table.str(), stdout);
+```
+
+### Output to stderr
+
+```cpp
+using namespace tabular;
+
+Table errorTable;
+errorTable.border(Border::heavy());
+errorTable.addRow({"Error Code", "Message"});
+errorTable.addRow({"404", "Not Found"});
+
+// Output error table to stderr
+render(errorTable.str(), stderr);
+```
+
+### Output to File
+
+```cpp
+#include <cstdio>
+using namespace tabular;
+
+Table table;
+table.addRow({"Data1", "Data2"});
+
+FILE* file = fopen("output.txt", "w");
+if (file) {
+  render(table.str(), file);
+  fclose(file);
+}
+```
+
+### Multiple Tables
+
+```cpp
+using namespace tabular;
+
+Table table1;
+table1.addRow({"Table 1", "Data"});
+
+Table table2;
+table2.addRow({"Table 2", "Data"});
+
+// Render multiple tables
+render(table1.str(), stdout);
+std::cout << "\n";  // Blank line between tables
+render(table2.str(), stdout);
+```
+
+## vs std::cout
+
+### Using std::cout (Not Recommended for Cross-Platform)
+
+```cpp
+// Works on most Unix/Linux/macOS but may have issues on Windows
+std::cout << table.str() << std::endl;
+```
+
+**Issues with std::cout on Windows:**
+- Unicode box-drawing characters may not render correctly
+- Requires console code page setup (chcp 65001)
+- May display garbled characters
+
+### Using render() (Recommended)
+
+```cpp
+// Works consistently across all platforms
+render(table.str(), stdout);
+std::cout << std::endl;  // Use std::cout only for newlines if needed
+```
+
+## Examples
+
+### Simple Example
+
+```cpp
+#include <tabular/table.h>
+#include <tabular/render.h>
+
+int main() {
+  using namespace tabular;
+  
+  Table table;
+  table.border(Border::rounded());
+  table.addRow({"Hello", "World"});
+  
+  render(table.str(), stdout);
+  
+  return 0;
+}
+```
+
+### Error Reporting
+
+```cpp
+#include <tabular/table.h>
+#include <tabular/render.h>
+
+void reportError(const std::string& code, const std::string& message) {
+  using namespace tabular;
+  
+  Table errorTable;
+  errorTable.border(Border::heavy());
+  
+  Row header({"ERROR CODE", "MESSAGE"});
+  header.column(0).style().fg(Color::BrightRed).attrs(Attr::Bold);
+  header.column(1).style().fg(Color::BrightRed).attrs(Attr::Bold);
+  errorTable.addRow(header);
+  
+  Row data({code, message});
+  data.column(0).style().fg(Color::Red);
+  errorTable.addRow(data);
+  
+  // Output to stderr
+  render(errorTable.str(), stderr);
+}
+
+int main() {
+  reportError("E404", "Resource not found");
+  return 1;
+}
+```
+
+### Logging to File
+
+```cpp
+#include <tabular/table.h>
+#include <tabular/render.h>
+#include <cstdio>
+#include <ctime>
+
+void logTableToFile(const std::string& filename) {
+  using namespace tabular;
+  
+  Table logTable;
+  logTable.border(Border::modern());
+  
+  // Get current time
+  time_t now = time(nullptr);
+  char timeStr[100];
+  strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&now));
+  
+  logTable.addRow({"Timestamp", "Event", "Status"});
+  logTable.addRow({timeStr, "Application Start", "Success"});
+  
+  FILE* logFile = fopen(filename.c_str(), "a");
+  if (logFile) {
+    render(logTable.str(), logFile);
+    fprintf(logFile, "\n");
+    fclose(logFile);
+  }
+}
+
+int main() {
+  logTableToFile("app.log");
+  return 0;
+}
+```
+
+### Conditional Rendering
+
+```cpp
+#include <tabular/table.h>
+#include <tabular/render.h>
+
+void displayResults(bool success, const std::string& message) {
+  using namespace tabular;
+  
+  Table table;
+  table.border(Border::modern());
+  
+  Row row({success ? "✓" : "✗", message});
+  
+  if (success) {
+    row.column(0).style().fg(Color::BrightGreen).attrs(Attr::Bold);
+  } else {
+    row.column(0).style().fg(Color::BrightRed).attrs(Attr::Bold);
+  }
+  
+  table.addRow(row);
+  
+  // Output to appropriate stream
+  FILE* out = success ? stdout : stderr;
+  render(table.str(), out);
+}
+
+int main() {
+  displayResults(true, "Operation completed successfully");
+  displayResults(false, "Operation failed");
+  
+  return 0;
+}
+```
+
+### Buffered Output
+
+```cpp
+#include <tabular/table.h>
+#include <tabular/render.h>
+#include <vector>
+
+int main() {
+  using namespace tabular;
+  
+  std::vector<Table> tables;
+  
+  // Create multiple tables
+  for (int i = 0; i < 3; i++) {
+    Table t;
+    t.border(Border::rounded());
+    t.addRow({"Table " + std::to_string(i + 1), "Data"});
+    tables.push_back(t);
+  }
+  
+  // Render all at once
+  for (const auto& table : tables) {
+    render(table.str(), stdout);
+    std::cout << std::endl;
+  }
+  
+  return 0;
+}
+```
+
+## Platform-Specific Notes
+
+### Windows
+
+- Automatically handles UTF-8 to UTF-16 conversion
+- Uses Windows Console API (`WriteConsoleW`)
+- Supports Windows 10+ native ANSI color support
+- Falls back gracefully for file output
+
+**Windows Terminal Recommendation:**
+- Use Windows Terminal (not cmd.exe) for best results
+- Supports full Unicode and 24-bit colors
+
+### Linux/macOS
+
+- Direct UTF-8 output via `fwrite()`
+- Full Unicode support in most terminals
+- ANSI colors widely supported
+
+**Terminal Recommendations:**
+- GNOME Terminal
+- Konsole
+- iTerm2 (macOS)
+- Alacritty
+- Kitty
+
+## Best Practices
+
+1. **Always use `render()` for table output** instead of `std::cout` when cross-platform support is needed
+2. **Use `stdout` for normal output** and `stderr` for errors
+3. **Check file pointer** validity when writing to files
+4. **Close files** after writing
+5. **Test on target platforms** especially if using advanced Unicode or colors
+
+## See Also
+
+- [Table](/api/table) - Table class reference
+- [Border](/api/border) - Border styles with Unicode characters
+- [Color](/api/color) - Color support details

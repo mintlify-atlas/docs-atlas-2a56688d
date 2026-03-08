@@ -1,0 +1,309 @@
+---
+title: 'Row'
+description: 'Row class for managing table rows and columns'
+---
+
+## Overview
+
+The `Row` class represents a single row in a table. It manages a collection of columns and provides configuration options for row-specific styling and borders.
+
+## Class Definition
+
+```cpp
+namespace tabular {
+  class Row;
+}
+```
+
+## Constructors
+
+### Default Constructor
+
+```cpp
+Row()
+```
+
+Creates an empty row.
+
+**Example:**
+```cpp
+tabular::Row row;
+```
+
+### Column Vector Constructor
+
+```cpp
+explicit Row(std::vector<Column> columns)
+```
+
+Creates a row from a vector of Column objects.
+
+<ParamField path="columns" type="std::vector<Column>">
+  Vector of Column objects to initialize the row
+</ParamField>
+
+**Example:**
+```cpp
+using namespace tabular;
+
+Column col1("Name");
+Column col2("Age");
+Row row({col1, col2});
+```
+
+### String Vector Constructor
+
+```cpp
+explicit Row(std::vector<std::string> columns)
+```
+
+Creates a row from a vector of strings. Each string becomes a column.
+
+<ParamField path="columns" type="std::vector<std::string>">
+  Vector of strings to create columns
+</ParamField>
+
+**Example:**
+```cpp
+tabular::Row row({"Alice", "30", "New York"});
+```
+
+## Methods
+
+### columns()
+
+Gets or sets all columns in the row.
+
+```cpp
+std::vector<Column>& columns()
+const std::vector<Column>& columns() const
+void columns(std::vector<Column> columns)
+```
+
+**Returns:** Reference to the vector of columns
+
+**Example:**
+```cpp
+Row row;
+row.columns({
+  Column("Data1"),
+  Column("Data2"),
+  Column("Data3")
+});
+
+// Access all columns
+for (auto& col : row.columns()) {
+  col.config().align(Align::Center);
+}
+```
+
+### column()
+
+Accesses a specific column by index.
+
+```cpp
+Column& column(int index)
+const Column& column(int index) const
+Column& operator[](int index)
+const Column& operator[](int index) const
+```
+
+<ParamField path="index" type="int">
+  Zero-based index of the column to access
+</ParamField>
+
+**Returns:** Reference to the column at the specified index
+
+**Throws:** `std::out_of_range` if index is invalid
+
+**Example:**
+```cpp
+Row row({"Name", "Age", "City"});
+
+// Access column by index
+row.column(0).style().fg(Color::Green);
+
+// Or using operator[]
+row[1].config().align(Align::Center);
+```
+
+### config()
+
+Accesses the row's configuration settings.
+
+```cpp
+Config& config()
+const Config& config() const
+```
+
+**Returns:** Reference to the Config object
+
+**Example:**
+```cpp
+Row row({"Header1", "Header2"});
+row.config().hasBottom(true);
+```
+
+### str()
+
+Generates the string representation of the row.
+
+```cpp
+const std::string& str() const
+```
+
+**Returns:** Const reference to the rendered row string
+
+**Note:** This method uses caching and is automatically called by Table when rendering.
+
+### clr()
+
+Clears all columns and resets the row configuration.
+
+```cpp
+void clr()
+```
+
+**Example:**
+```cpp
+Row row({"Data1", "Data2"});
+row.clr(); // Row is now empty
+```
+
+## Nested Classes
+
+### Row::Config
+
+Configuration class for row-level settings.
+
+#### Methods
+
+**hasBottom()**
+```cpp
+void hasBottom(bool hasBottom)
+bool hasBottom() const
+```
+
+Controls whether the row has a bottom border separator.
+
+<ParamField path="hasBottom" type="bool">
+  If true, a horizontal separator is drawn below the row (default: true)
+</ParamField>
+
+**Example:**
+```cpp
+// Header row with bottom border
+row.config().hasBottom(true);
+
+// Regular row without bottom border
+row.config().hasBottom(false);
+```
+
+**vertical()**
+```cpp
+void vertical(Border::Part part)
+const Border::Part& vertical() const
+```
+
+Sets the vertical border character for this row.
+
+<ParamField path="part" type="Border::Part">
+  Border part to use for vertical separators
+</ParamField>
+
+**Example:**
+```cpp
+Border::Part customVertical(U'|');
+customVertical.fg(Color::Blue);
+row.config().vertical(customVertical);
+```
+
+**reset()**
+```cpp
+void reset()
+```
+
+Resets configuration to default values.
+
+## Examples
+
+### Creating a Header Row
+
+```cpp
+#include <tabular/table.h>
+using namespace tabular;
+
+Table table;
+
+// Add header row with styling
+Row header({"Name", "Age", "City"});
+header.config().hasBottom(true);
+
+// Style each header column
+for (auto& col : header.columns()) {
+  col.style().fg(Color::BrightCyan).attrs(Attr::Bold);
+  col.config().align(Align::Center);
+}
+
+table.addRow(header);
+```
+
+### Creating a Data Row
+
+```cpp
+using namespace tabular;
+
+Row dataRow({"Alice", "30", "New York"});
+dataRow.config().hasBottom(false);
+
+// Align specific columns
+dataRow[0].config().align(Align::Left);
+dataRow[1].config().align(Align::Center);
+dataRow[2].config().align(Align::Left);
+```
+
+### Accessing and Modifying Columns
+
+```cpp
+Row row({"Value1", "Value2", "Value3"});
+
+// Modify specific columns
+row.column(0).content("Updated");
+row.column(1).style().fg(Color::Green);
+row.column(2).config().width(20);
+
+// Iterate through all columns
+for (size_t i = 0; i < row.columns().size(); i++) {
+  row[i].config().align(Align::Center);
+}
+```
+
+### Custom Row Separators
+
+```cpp
+using namespace tabular;
+
+Table table;
+table.border(Border::modern());
+
+// Header with separator
+Row header({"Product", "Price", "Stock"});
+header.config().hasBottom(true);
+table.addRow(header);
+
+// Data rows without separators
+for (int i = 0; i < 3; i++) {
+  Row dataRow({"Item" + std::to_string(i), "$10", "100"});
+  dataRow.config().hasBottom(false);
+  table.addRow(dataRow);
+}
+
+// Last row with separator
+table.row(table.rows().size() - 1).config().hasBottom(false);
+```
+
+## See Also
+
+- [Table](/api/table) - Table class reference
+- [Column](/api/column) - Column configuration
+- [Border](/api/border) - Border styling options

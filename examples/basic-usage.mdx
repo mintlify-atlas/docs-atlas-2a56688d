@@ -1,0 +1,145 @@
+---
+title: Basic Usage Examples
+description: Learn how to create simple tables with Tabular
+---
+
+## Simple Table Creation
+
+Create a basic table by instantiating a `Table` object and adding rows with the `addRow()` method. Each call to `addRow()` takes an initializer list of strings representing the columns.
+
+```cpp
+#include "tabular/table.h"
+#include "tabular/render.h"
+
+int main()
+{
+  using namespace tabular;
+  Table table;
+
+  table.addRow({"Countries Capitals"})
+       .addRow({"United States", "Washington"})
+       .addRow({"Brazil", "Brasilia"})
+       .addRow({"France", "Paris"})
+       .addRow({"Japan", "Tokyo"})
+       .addRow({"India", "New Delhi"});
+
+  render(table.str() + '\n', stdout);
+  return 0;
+}
+```
+
+**Output:**
+Produces a formatted table with default ASCII borders (`+`, `-`, `|` characters), showing the country names in the first column and their capitals in the second column.
+
+## Adding Multiple Rows
+
+The `addRow()` method returns a reference to the table, allowing for method chaining. This makes it easy to build tables with multiple rows in a fluent interface style.
+
+<CodeGroup>
+```cpp Single Column
+Table table;
+
+table.addRow({"Header"})
+     .addRow({"Row 1"})
+     .addRow({"Row 2"})
+     .addRow({"Row 3"});
+
+render(table.str() + '\n', stdout);
+```
+
+```cpp Multiple Columns
+Table table;
+
+table.addRow({"ID", "Name", "Status"})
+     .addRow({"001", "Alice", "Active"})
+     .addRow({"002", "Bob", "Inactive"})
+     .addRow({"003", "Charlie", "Active"});
+
+render(table.str() + '\n', stdout);
+```
+
+```cpp Mixed Content
+Table table;
+
+table.addRow({"Product", "Price", "Stock"})
+     .addRow({"Laptop", "$999", "15"})
+     .addRow({"Mouse", "$25", "150"})
+     .addRow({"Keyboard", "$75", "87"});
+
+render(table.str() + '\n', stdout);
+```
+</CodeGroup>
+
+## Rendering Tables
+
+Tabular provides two methods for outputting tables:
+
+<Tabs>
+<Tab title="Cross-Platform Rendering">
+
+Use `render()` from `tabular/render.h` for cross-platform support, especially when working with Unicode characters:
+
+```cpp
+#include "tabular/render.h"
+
+Table table;
+// ... add rows ...
+
+render(table.str() + '\n', stdout);
+```
+
+This method ensures proper handling of multibyte characters across different terminal emulators.
+
+</Tab>
+<Tab title="Standard Output">
+
+For simple ASCII tables, you can use standard output streams:
+
+```cpp
+Table table;
+// ... add rows ...
+
+std::cout << table.str() << '\n';
+```
+
+**Note:** This approach works well for ASCII characters but may have issues with Unicode characters on some platforms.
+
+</Tab>
+</Tabs>
+
+## Accessing Table Elements
+
+You can access and modify specific cells in your table using the `[]` operator:
+
+```cpp
+Table table;
+table.addRow({"Header 1", "Header 2"})
+     .addRow({"Data 1", "Data 2"});
+
+// Access a specific cell: table[row][column]
+Column& cell = table[0][0];
+
+// Access using rows() and columns()
+Column& sameCell = table.rows()[0].columns()[0];
+
+// Access an entire row
+Row& firstRow = table[0];
+Row& sameRow = table.rows()[0];
+```
+
+## Setting Table Width
+
+By default, tables have a width of 50 characters. You can change this using the `width()` configuration:
+
+```cpp
+Table table;
+table.addRow({"Name", "Description"})
+     .addRow({"Tabular", "A lightweight CLI table library"});
+
+// Set custom width
+table.config().width(80);
+
+render(table.str() + '\n', stdout);
+```
+
+The table will automatically distribute the available width among its columns. If you specify a width smaller than the minimum required, a `std::runtime_exception` will be thrown with the estimated minimum width.

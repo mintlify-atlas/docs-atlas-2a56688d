@@ -1,0 +1,264 @@
+---
+title: Width System
+description: Understand how width calculation and distribution works in Tabular
+---
+
+## Overview
+
+The Tabular library uses a sophisticated width system to ensure tables are properly formatted and columns are distributed appropriately.
+
+## Default Width
+
+By default, every newly constructed `Table` instance has a width of **50 characters**:
+
+```cpp
+Table table; // Default width is 50
+```
+
+This default is defined by the `DEFAULT_WIDTH` constant.
+
+## Setting Table Width
+
+Change the table width using the `config().width()` method:
+
+```cpp
+table.config().width(80);   // Set to 80 characters
+table.config().width(100);  // Set to 100 characters
+```
+
+The table width includes:
+- All column content
+- Column padding
+- Vertical borders (one on each side of each column)
+
+## How Width Calculation Works
+
+### Automatic Width Distribution
+
+When column widths are not explicitly set (default `width = 0`), the table automatically distributes the available width equally among all columns:
+
+```cpp
+Table table;
+table.addRow({"Col1", "Col2", "Col3"});
+table.config().width(50);
+
+// Each column gets approximately (50 - 4 borders) / 3 = ~15 chars
+```
+
+### Estimated Width Calculation
+
+The library calculates the available width for content as:
+
+```cpp
+size_t estimatedWidth = tableWidth - (numberOfColumns + 1);
+```
+
+This accounts for the vertical border characters (`|`) on each side of every column.
+
+### Width with Borders
+
+For a table with `n` columns:
+- **Total borders**: `n + 1` vertical borders
+- **Content width**: `tableWidth - (n + 1)`
+
+Example with 3 columns and width 50:
+```
+| Column 1 | Column 2 | Column 3 |
+^          ^          ^          ^
+1          2          3          4 borders = n + 1
+```
+
+## Setting Column Width
+
+You can explicitly set the width of individual columns:
+
+```cpp
+table[0][0].config().width(20);
+table[0][1].config().width(30);
+// Column 2 width is automatically calculated
+```
+
+### Partial Width Specification
+
+You can set the width of **some** columns (not all). The unspecified columns will share the remaining width:
+
+```cpp
+table.config().width(50);
+table.addRow({"Name", "Age", "City"});
+
+// Set width for first column only
+table[0][0].config().width(20);
+
+// Columns 1 and 2 share remaining: (50 - 4 borders - 20) / 2 = 13 each
+```
+
+<Note>
+When setting some column widths, the sum must **not exceed** the total table width and must leave **enough space** for the remaining columns.
+</Note>
+
+### Complete Width Specification
+
+To set the width of **all** columns, the sum must **exactly equal** the table width minus border space:
+
+```cpp
+table.config().width(50);
+table.addRow({"Col1", "Col2", "Col3"});
+
+// 50 - 4 borders = 46 available for content
+table[0][0].config().width(15);
+table[0][1].config().width(15);
+table[0][2].config().width(16);  // 15 + 15 + 16 = 46 ✓
+```
+
+<Warning>
+If you set all column widths, their sum must exactly equal `tableWidth - (numberOfColumns + 1)`. Otherwise, the library will reset and redistribute the widths automatically.
+</Warning>
+
+## Width Constraints
+
+### Minimum Column Width
+
+Each column has a minimum width constraint defined by `MIN_COLUMN_WIDTH`:
+
+```cpp
+const size_t MIN_COLUMN_WIDTH = /* typically 1-3 */;
+```
+
+### Minimum Table Width
+
+The minimum table width depends on the number of columns:
+
+```cpp
+size_t minWidth = (numberOfColumns * (MIN_COLUMN_WIDTH + 1)) + 1;
+```
+
+For 3 columns with `MIN_COLUMN_WIDTH = 1`:
+```
+minWidth = (3 * (1 + 1)) + 1 = 7
+```
+
+### Width Errors
+
+If you specify a width that's too small, a `std::runtime_error` is thrown:
+
+```cpp
+table.config().width(10);
+table.addRow({"A", "B", "C", "D", "E"});  // Too many columns for width 10
+
+// Throws: "layout error: row 0 must a minimum width of 15, but found 10"
+```
+
+The error message includes the estimated minimum width needed.
+
+## Width Distribution Algorithm
+
+The library uses the following algorithm to distribute width:
+
+### Step 1: Calculate Unspecified Columns
+
+```cpp
+size_t unspecified = 0;
+size_t specifiedWidth = 0;
+
+for (auto& column : row.columns()) {
+  size_t w = column.config().width();
+  if (w == 0) {
+    unspecified++;
+  } else {
+    specifiedWidth += w;
+  }
+}
+```
+
+### Step 2: Distribute Remaining Width
+
+```cpp
+size_t remainingWidth = estimatedWidth - specifiedWidth;
+size_t widthPerColumn = remainingWidth / unspecified;
+size_t remainder = remainingWidth % unspecified;
+
+// Distribute evenly, with remainder going to last column
+```
+
+### Step 3: Handle Remainder
+
+Any remainder from integer division is added to the last unspecified column:
+
+```cpp
+if (remainder > 0) {
+  lastUnspecifiedColumn.config().width(widthPerColumn + remainder);
+}
+```
+
+## Width Examples
+
+### Example 1: All Auto Width
+
+```cpp
+Table table;
+table.config().width(50);
+table.addRow({"A", "B", "C"});
+
+// Available: 50 - 4 = 46
+// Each column: 46 / 3 = 15, with remainder 1
+// Distribution: 15, 15, 16
+```
+
+### Example 2: Partial Width Specification
+
+```cpp
+Table table;
+table.config().width(50);
+table.addRow({"Name", "Age", "Email"});
+
+table[0][0].config().width(15);  // Name gets 15
+// Available: 50 - 4 - 15 = 31
+// Age and Email share: 31 / 2 = 15, remainder 1
+// Distribution: 15, 15, 16
+```
+
+### Example 3: Complete Width Specification
+
+```cpp
+Table table;
+table.config().width(50);
+table.addRow({"Col1", "Col2", "Col3"});
+
+// Must sum to: 50 - 4 = 46
+table[0][0].config().width(10);
+table[0][1].config().width(20);
+table[0][2].config().width(16);
+// Sum: 10 + 20 + 16 = 46 ✓
+```
+
+### Example 4: Width Error
+
+```cpp
+Table table;
+table.config().width(15);  // Too small
+table.addRow({"A", "B", "C", "D", "E"});
+
+// Minimum required: (5 * 2) + 1 = 11 (if MIN_COLUMN_WIDTH = 1)
+// Throws runtime_error with minimum width estimate
+```
+
+## Tips for Width Management
+
+<Note>
+**Best practices:**
+
+1. Start with the default width (50) for simple tables
+2. Increase width if content is being wrapped excessively
+3. Set specific column widths only when you need precise control
+4. Let the library auto-calculate when possible
+5. Check error messages for minimum width requirements
+</Note>
+
+<Warning>
+**Common pitfalls:**
+
+- Setting table width too small for the number of columns
+- Specifying all column widths with incorrect sum
+- Forgetting to account for border characters in calculations
+- Not leaving enough space for padding when setting column widths
+</Warning>

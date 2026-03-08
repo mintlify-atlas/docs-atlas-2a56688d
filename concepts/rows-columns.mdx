@@ -1,0 +1,198 @@
+---
+title: Working with Rows and Columns
+description: Access and configure rows and columns in your Tabular tables
+---
+
+## Row Class
+
+The `Row` class represents a horizontal line of data in a table, containing multiple columns.
+
+### Creating Rows
+
+Rows can be created with a vector of columns or strings:
+
+```cpp
+// From vector of strings
+Row row({"Column 1", "Column 2", "Column 3"});
+
+// From vector of Column objects
+Row row(std::vector<Column> columns);
+```
+
+## Accessing Rows
+
+You can access rows in a table using the `[]` operator or the `rows()` method:
+
+```cpp
+Table table;
+table.addRow({"Header"});
+
+// Using [] operator
+Row& header = table[0];
+
+// Using rows() method
+Row& header = table.rows()[0];
+```
+
+## Column Class
+
+The `Column` class represents individual cells in a table, containing text content and styling.
+
+### Creating Columns
+
+```cpp
+// Default constructor
+Column col;
+
+// With content
+Column col("Cell content");
+```
+
+## Accessing Columns
+
+Access columns from a row using the `[]` operator or `columns()` method:
+
+```cpp
+Row row({"Header"});
+
+// Using [] operator
+Column& first = row[0];
+
+// Using columns() method  
+Column& first = row.columns()[0];
+```
+
+### Direct Element Access
+
+Chain operators to access a specific column directly from a table:
+
+```cpp
+Table table;
+table.addRow({"Header"});
+
+// Direct access
+Column& first = table[0][0];
+Column& first = table.rows()[0].columns()[0];
+```
+
+## Column Configuration
+
+Columns offer extensive configuration options through the `config()` method:
+
+### Alignment
+
+Set text alignment within the column:
+
+```cpp
+table[0][0].config().align(Align::Left);    // Left aligned (default)
+table[0][1].config().align(Align::Center);  // Center aligned
+table[0][2].config().align(Align::Right);   // Right aligned
+```
+
+### Padding
+
+Add padding around column content using the `Padd` structure:
+
+```cpp
+// Padd(left, right, top, bottom)
+table[0][0].config().padd(Padd(1, 1));      // 1 space left and right
+table[0][0].config().padd(Padd(1, 1, 0, 0)); // Full control
+table[0][0].config().padd(Padd(0, 0));      // No padding
+```
+
+### Width
+
+Set the width of individual columns:
+
+```cpp
+table[0][0].config().width(20);
+```
+
+<Note>
+By default, column width is `0`, which means the width is automatically calculated based on the table width. See the [Width System](/concepts/width-system) page for details.
+</Note>
+
+### Word Wrapping Delimiter
+
+Set the delimiter used when wrapping long words:
+
+```cpp
+table[0][0].config().delimiter("-");  // Default
+table[0][0].config().delimiter("~");  // Custom delimiter
+```
+
+### Empty Line Indentation
+
+Control whether to skip whitespace at the start of new lines:
+
+```cpp
+// Skip spaces at start of lines (default: true)
+table[0][0].config().skipEmptyLineIndent(true);
+
+// Preserve all spaces (important for ASCII art)
+table[0][0].config().skipEmptyLineIndent(false);
+```
+
+## Row Configuration
+
+Rows have their own configuration options:
+
+### Bottom Border
+
+Control whether a row has a bottom border:
+
+```cpp
+// Has bottom border (default: true)
+table[0].config().hasBottom(true);
+
+// No bottom border
+table[0].config().hasBottom(false);
+```
+
+### Vertical Border
+
+Set the vertical border character for a specific row:
+
+```cpp
+table[0].config().vertical(Border::Part('|'));
+```
+
+<Note>
+The row's vertical border is overridden by the table's border configuration. This setting is mainly for internal use.
+</Note>
+
+## Complete Example
+
+```cpp
+Table table;
+table.addRow({"Product", "Price", "Status"})
+     .addRow({"Laptop", "$999", "Available"});
+
+// Configure header row
+table[0][0].config().align(Align::Center)
+                   .padd(Padd(1, 1))
+                   .width(20);
+
+table[0][1].config().align(Align::Right)
+                   .padd(Padd(2, 2));
+
+table[0][2].config().align(Align::Center);
+
+// Configure data row
+table[1][1].config().align(Align::Right);
+
+// Remove bottom border from last row
+table[1].config().hasBottom(false);
+```
+
+## Configuration Summary
+
+| Function | Class | Parameters | Default |
+|----------|-------|------------|----------|
+| `align()` | Column | `Align::Left` \| `Align::Center` \| `Align::Right` | `Align::Left` |
+| `width()` | Column | `size_t` | `0` (auto) |
+| `padd()` | Column | `Padd` | `Padd()` (no padding) |
+| `delimiter()` | Column | `std::string` | `"-"` |
+| `skipEmptyLineIndent()` | Column | `bool` | `true` |
+| `hasBottom()` | Row | `bool` | `true` |
+| `vertical()` | Row | `Border::Part` | `'\0'` |

@@ -1,0 +1,138 @@
+---
+title: Understanding Tables
+description: Learn how to create and configure tables in Tabular C++
+---
+
+## Table Class Overview
+
+The `Table` class is the core component of the Tabular library. It manages rows, borders, and configuration settings to create well-formatted CLI tables.
+
+```cpp
+namespace tabular {
+  class Table {
+    // ... methods
+  };
+}
+```
+
+## Creating Tables
+
+### Basic Construction
+
+You can create a table using the default constructor:
+
+```cpp
+Table table;
+```
+
+Or with an initial set of rows and border:
+
+```cpp
+Table table(std::vector<Row> rows, Border border = {});
+```
+
+### Adding Rows
+
+Use the `addRow()` method to add rows to your table. This method returns a reference to the table, allowing for method chaining:
+
+```cpp
+Table table;
+
+table.addRow({"Countries Capitals"})
+     .addRow({"United States", "Washington"})
+     .addRow({"Brazil", "Brasilia"})
+     .addRow({"France", "Paris"})
+     .addRow({"Japan", "Tokyo"})
+     .addRow({"India", "New Delhi"});
+```
+
+You can pass either a `Row` object or a vector of strings:
+
+```cpp
+// With vector of strings
+table.addRow({"Column 1", "Column 2", "Column 3"});
+
+// With Row object
+Row row({"Data 1", "Data 2", "Data 3"});
+table.addRow(row);
+```
+
+## Table Configuration
+
+### Setting Table Width
+
+The default width of a table is **50 characters**. You can change it using the `config().width()` method:
+
+```cpp
+Table table;
+table.config().width(80);
+```
+
+<Note>
+The default width constant is defined as `DEFAULT_WIDTH = 50`.
+</Note>
+
+### Full Example
+
+Here's a complete example from the library:
+
+```cpp
+using namespace tabular;
+Table table;
+
+// Add rows
+table.addRow({
+  "   __        ___.         .__\n"
+  " _/  |______ \\_ |__  __ __|  | _____ _______\n"
+  " \\   __\\__  \\ | __ \\|  |  \\  | \\\\__  \\_  __ \\\n"
+  "  |  |  / __ \\| \\_\\ \\  |  /  |__/ __ \\|  | \\/\n"
+  "  |__| (____  /___  /____/|____(____  /__|\n"
+  "           \\/    \\/                \\/\n",
+})
+.addRow({
+  "lightweight header-only library for constructing well-formatted,"
+  " fully-customizable CLI tables."
+});
+
+// Configure width
+table.config().width(48);
+
+// Set border style
+table.border(Border::rounded());
+```
+
+## Rendering the Table
+
+To convert the table to its string representation:
+
+```cpp
+std::string tableStr = table.str();
+```
+
+For cross-platform rendering, especially with multibyte characters, use the `render()` function:
+
+```cpp
+#include <tabular/render.h>
+
+render(table.str() + '\n', stdout);
+// or
+std::cout << table.str() << '\n'; // for ASCII characters only
+```
+
+<Warning>
+For proper display of Unicode and multibyte characters, always use the `render()` function from `render.h` instead of direct output to `stdout`.
+</Warning>
+
+## Clearing a Table
+
+You can clear all rows, configuration, and borders:
+
+```cpp
+table.clr();
+```
+
+This resets:
+- All rows
+- Configuration (width returns to default)
+- Border settings
+- Internal cached string representation

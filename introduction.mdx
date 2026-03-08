@@ -1,0 +1,69 @@
+---
+title: Introduction
+description: Learn about Tabular, a lightweight, header-only C++ library for creating well-formatted, fully-customizable CLI tables
+---
+
+## What is Tabular?
+
+Tabular is a lightweight, header-only C++ library for creating well-formatted, fully-customizable CLI tables. It provides a simple and intuitive API for building beautiful command-line interfaces with minimal setup.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Full Unicode Support" icon="globe">
+    Locale-independent display width handling with complete Unicode support
+  </Card>
+  <Card title="Cross-Platform" icon="laptop">
+    Cross-platform rendering through the `render()` function
+  </Card>
+  <Card title="Customizable Styling" icon="palette">
+    Fully customizable through `Alignment`, `Padding`, `Color`, `Rgb`, and text attributes
+  </Card>
+  <Card title="Flexible Tables" icon="table">
+    Support for flexible tables with variant number of columns
+  </Card>
+  <Card title="Color Support" icon="paintbrush">
+    Compatible with [fmtlib](https://github.com/fmtlib/fmt)'s colored strings
+  </Card>
+  <Card title="Header-Only" icon="file">
+    Lightweight library with a single-include file option
+  </Card>
+</CardGroup>
+
+### Additional Features
+
+- **C++11 Support**: Full C++11 compatibility using only standard headers (`vector`, `string`, `stdexcept`, `cstdint`)
+- **Customizable Borders**: Pre-defined border templates (Default, Modern, Double, Rounded, Heavy) with full customization options
+- **Minimal Dependencies**: No external dependencies required
+- **Easy Integration**: Available as header files or single-include file
+
+## Use Cases
+
+Tabular is perfect for:
+
+- **CLI Applications**: Build professional command-line tools with formatted output
+- **Data Visualization**: Display tabular data in a readable format
+- **Logging and Reports**: Create structured logs and reports in the terminal
+- **Dashboard UIs**: Build terminal-based dashboards and monitoring tools
+- **Configuration Displays**: Show configuration data in an organized way
+
+## Requirements
+
+- **C++ Standard**: C++11 or later
+- **Dependencies**: None (uses only standard library headers)
+- **Platform**: Cross-platform (Linux, macOS, Windows)
+
+<Note>
+For best results with multibyte characters (especially CJK characters), use the `render()` function instead of direct output with `std::cout`.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install Tabular using CMake or as a header-only library
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Create your first table in minutes
+  </Card>
+</CardGroup>

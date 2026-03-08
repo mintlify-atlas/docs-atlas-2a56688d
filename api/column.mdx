@@ -1,0 +1,458 @@
+---
+title: 'Column'
+description: 'Column class for managing cell content, styling, and layout'
+---
+
+## Overview
+
+The `Column` class represents a single cell in a table. It manages content, styling (colors and attributes), and layout configuration (alignment, padding, width). Columns support automatic text wrapping and multi-line content.
+
+## Class Definition
+
+```cpp
+namespace tabular {
+  class Column;
+}
+```
+
+## Constructors
+
+### Default Constructor
+
+```cpp
+Column()
+```
+
+Creates an empty column.
+
+**Example:**
+```cpp
+tabular::Column col;
+```
+
+### String Constructor
+
+```cpp
+Column(std::string content)
+```
+
+Creates a column with the specified content.
+
+<ParamField path="content" type="std::string">
+  Initial content for the column
+</ParamField>
+
+**Example:**
+```cpp
+tabular::Column col("Hello, World!");
+```
+
+## Methods
+
+### content()
+
+Gets or sets the column's content.
+
+```cpp
+void content(std::string content)
+const std::string& content() const
+std::string& content()
+```
+
+<ParamField path="content" type="std::string">
+  New content for the column
+</ParamField>
+
+**Returns:** Reference to the content string
+
+**Example:**
+```cpp
+Column col;
+col.content("Updated content");
+
+std::string text = col.content();
+```
+
+### config()
+
+Accesses the column's configuration settings.
+
+```cpp
+Config& config()
+const Config& config() const
+```
+
+**Returns:** Reference to the Config object
+
+**Example:**
+```cpp
+Column col("Text");
+col.config()
+   .align(Align::Center)
+   .width(20)
+   .padd(Padd(1, 1, 2, 2));
+```
+
+### style()
+
+Accesses the column's style settings.
+
+```cpp
+Style& style()
+const Style& style() const
+```
+
+**Returns:** Reference to the Style object
+
+**Example:**
+```cpp
+Column col("Styled Text");
+col.style()
+   .fg(Color::Green)
+   .bg(Color::Black)
+   .attrs(Attr::Bold);
+```
+
+### lines()
+
+Gets the rendered lines of the column after applying wrapping and formatting.
+
+```cpp
+const std::vector<std::string>& lines() const
+```
+
+**Returns:** Vector of formatted strings (one per line)
+
+**Note:** This method uses caching and is automatically called during table rendering.
+
+**Example:**
+```cpp
+Column col("Long text that will wrap");
+col.config().width(10);
+
+for (const auto& line : col.lines()) {
+  std::cout << line << std::endl;
+}
+```
+
+### clr()
+
+Clears the column content and resets all configuration and styling.
+
+```cpp
+void clr()
+```
+
+**Example:**
+```cpp
+Column col("Data");
+col.clr(); // Column is now empty with default settings
+```
+
+## Nested Classes
+
+### Column::Config
+
+Configuration class for column layout settings.
+
+#### Methods
+
+**align()**
+```cpp
+Config& align(const Align alignment)
+Align align() const
+```
+
+Sets or gets the text alignment.
+
+<ParamField path="alignment" type="Align">
+  Alignment mode: `Align::Left`, `Align::Center`, or `Align::Right` (default: Left)
+</ParamField>
+
+**Example:**
+```cpp
+col.config().align(Align::Center);
+```
+
+**padd()**
+```cpp
+Config& padd(const Padd padd)
+Padd padd() const
+```
+
+Sets or gets the padding around the content.
+
+<ParamField path="padd" type="Padd">
+  Padding struct with top, bottom, left, right values (default: 0, 0, 1, 1)
+</ParamField>
+
+**Example:**
+```cpp
+// Padding: 1 top/bottom, 2 left/right
+col.config().padd(Padd(1, 2));
+
+// Padding: custom for each side
+col.config().padd(Padd(1, 1, 3, 3));
+```
+
+**width()**
+```cpp
+Config& width(const size_t width)
+size_t width() const
+```
+
+Sets or gets the column width in characters.
+
+<ParamField path="width" type="size_t">
+  Width in characters (0 means auto-calculate, default: 0)
+</ParamField>
+
+**Example:**
+```cpp
+col.config().width(30);
+```
+
+**delimiter()**
+```cpp
+Config& delimiter(std::string delimiter)
+std::string delimiter() const
+```
+
+Sets the delimiter character used when wrapping long words.
+
+<ParamField path="delimiter" type="std::string">
+  Character(s) to append when breaking words (default: "-")
+</ParamField>
+
+**Example:**
+```cpp
+col.config().delimiter("-");
+```
+
+**skipEmptyLineIndent()**
+```cpp
+Config& skipEmptyLineIndent(const bool skip)
+bool skipEmptyLineIndent() const
+```
+
+Controls whether to skip indentation for empty lines.
+
+<ParamField path="skip" type="bool">
+  If true, don't add padding to empty lines at the start (default: true)
+</ParamField>
+
+**Example:**
+```cpp
+col.config().skipEmptyLineIndent(false);
+```
+
+**reset()**
+```cpp
+void reset()
+```
+
+Resets all configuration to default values.
+
+### Column::Style
+
+Styling class for colors and text attributes.
+
+#### Methods
+
+**fg()**
+```cpp
+Style& fg(Color color)
+Style& fg(const Rgb rgb)
+uint32_t fg() const
+bool hasFg() const
+```
+
+Sets or gets the foreground (text) color.
+
+<ParamField path="color" type="Color | Rgb">
+  Color enum value or RGB color
+</ParamField>
+
+**Example:**
+```cpp
+// Using Color enum
+col.style().fg(Color::BrightGreen);
+
+// Using RGB
+col.style().fg(Rgb(255, 100, 50));
+```
+
+**bg()**
+```cpp
+Style& bg(Color color)
+Style& bg(const Rgb rgb)
+uint32_t bg() const
+bool hasBg() const
+```
+
+Sets or gets the background color.
+
+<ParamField path="color" type="Color | Rgb">
+  Color enum value or RGB color
+</ParamField>
+
+**Example:**
+```cpp
+// Using Color enum
+col.style().bg(Color::Black);
+
+// Using RGB
+col.style().bg(Rgb(30, 30, 30));
+```
+
+**base()**
+```cpp
+Style& base(Color color)
+Style& base(const Rgb rgb)
+uint32_t base() const
+bool hasBase() const
+```
+
+Sets the base background color (fills empty space in the column).
+
+<ParamField path="color" type="Color | Rgb">
+  Color enum value or RGB color
+</ParamField>
+
+**Example:**
+```cpp
+col.style().base(Color::BrightBlack);
+```
+
+**attrs()**
+```cpp
+Style& attrs(Attr attr)
+Style& attrs(const Style& attr)
+Attr attrs() const
+bool hasAttrs() const
+```
+
+Sets text attributes (bold, italic, underline, etc.).
+
+<ParamField path="attr" type="Attr">
+  Attribute or combination of attributes using `|` operator
+</ParamField>
+
+**Example:**
+```cpp
+// Single attribute
+col.style().attrs(Attr::Bold);
+
+// Multiple attributes
+col.style().attrs(Attr::Bold | Attr::Underline);
+```
+
+**Reset Methods**
+```cpp
+void resetFg()
+void resetBg()
+void resetBase()
+void resetAttrs()
+void reset()
+```
+
+Reset individual styling components or all styling.
+
+**Example:**
+```cpp
+col.style().resetFg();    // Clear foreground color
+col.style().reset();      // Clear all styling
+```
+
+## Examples
+
+### Basic Column with Styling
+
+```cpp
+#include <tabular/column.h>
+using namespace tabular;
+
+Column col("Important");
+col.config().align(Align::Center);
+col.style()
+   .fg(Color::BrightRed)
+   .attrs(Attr::Bold | Attr::Underline);
+```
+
+### Column with Custom Width and Padding
+
+```cpp
+Column col("This is a long text that will be wrapped");
+col.config()
+   .width(20)
+   .padd(Padd(0, 0, 2, 2))  // 2 chars padding left/right
+   .align(Align::Left)
+   .delimiter("-");
+```
+
+### Multi-line Content
+
+```cpp
+Column col("Line 1\nLine 2\nLine 3");
+col.config()
+   .width(30)
+   .align(Align::Center)
+   .padd(Padd(1, 1, 1, 1));  // Add padding around content
+```
+
+### Colored Background
+
+```cpp
+Column col("Highlighted");
+col.style()
+   .fg(Color::White)
+   .bg(Color::Blue)
+   .base(Color::Blue);  // Fill empty space with blue
+```
+
+### RGB Colors
+
+```cpp
+Column col("Custom Colors");
+col.style()
+   .fg(Rgb(255, 100, 50))      // Orange text
+   .bg(Rgb(30, 30, 30))        // Dark gray background
+   .attrs(Attr::Bold);
+```
+
+### Text Attributes Combinations
+
+```cpp
+Column col("Styled Text");
+
+// Bold and italic
+col.style().attrs(Attr::Bold | Attr::Italic);
+
+// Bold, underline, and colored
+col.style()
+   .fg(Color::BrightCyan)
+   .attrs(Attr::Bold | Attr::Underline);
+```
+
+### Dynamic Content
+
+```cpp
+Column col;
+
+// Set content dynamically
+col.content("Initial");
+std::cout << col.content() << std::endl;
+
+// Update content
+col.content("Updated");
+
+// Access content by reference
+col.content() += " - Modified";
+```
+
+## See Also
+
+- [Row](/api/row) - Row class reference
+- [Color](/api/color) - Color and RGB reference
+- [Alignment](/api/alignment) - Align, Padd, and Attr enums
+- [Table](/api/table) - Table class reference
