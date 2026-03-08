@@ -1,0 +1,93 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Tabular",
+  "projectDescription": "A lightweight, header-only C++ library for creating well-formatted, fully-customizable CLI tables.",
+  "theme": "palm",
+  "primaryColor": "#3B82F6",
+  "lightColor": "#60A5FA",
+  "darkColor": "#2563EB",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/tables",
+              "concepts/rows-columns",
+              "concepts/borders",
+              "concepts/styling",
+              "concepts/width-system"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "examples/basic-usage",
+              "examples/advanced-styling",
+              "examples/custom-borders"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Core Classes",
+            "pages": [
+              "api/table",
+              "api/row",
+              "api/column"
+            ]
+          },
+          {
+            "group": "Styling & Appearance",
+            "pages": [
+              "api/border",
+              "api/color",
+              "api/alignment"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/render"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Header-only C++ library with single-include option",
+    "Full Unicode support with locale-independent display width handling",
+    "Fully customizable tables, rows, columns, and borders",
+    "RGB and terminal color support with text attributes",
+    "Cross-platform rendering with fmtlib compatibility",
+    "Flexible table layouts with automatic width adjustment",
+    "C++11 compatible with minimal dependencies"
+  ],
+  "publicApiSurface": [
+    "Table",
+    "Row",
+    "Column",
+    "Border",
+    "Border::Part",
+    "Color",
+    "Rgb",
+    "Align",
+    "Padd",
+    "Attr",
+    "render()"
+  ]
+}
